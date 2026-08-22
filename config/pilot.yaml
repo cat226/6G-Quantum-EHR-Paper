@@ -1,0 +1,48 @@
+# Pilot experiment configuration (Task 7 Part 7, Task 8 Phase 14).
+#
+# 3 QKD availability levels x 2 device counts x 1 payload x 1 network
+# load x 5 baselines = 30 configurations. Do NOT expand until Task 7
+# Part 7's six expansion criteria are checked against real pilot
+# results (see docs/implementation_notes.md).
+
+experiment_name: pilot
+
+qkd_availability_levels: [1.0, 0.5, 0.0]   # {100%, 50%, 0%}
+device_counts: [10, 1000]
+payload_classes: [medium]
+network_loads: [nominal]
+baselines: [B1, B2, B3, B4, B5]
+
+# Per-cell simulation parameters
+n_transactions_per_device: 10
+sim_duration_seconds: 10.0
+
+# Pilot-specific repetition count (Task 7 Part 7: "a small placeholder
+# count, provisional -- this pilot's own purpose is partly to produce
+# the variance estimate that sets the FULL study's repetition count,
+# per Task 7 Part 8's method"). Not a final number.
+repetitions_per_cell: 5
+
+# Adaptive controller thresholds (Task 6 Section 4). MODELED ASSUMPTIONS
+# -- see docs/implementation_notes.md's parameter table. Chosen so the
+# hybrid threshold sits comfortably below full-pool but the wait
+# threshold leaves a real margin for the bounded-wait behavior to be
+# exercised, not so tight that nearly every degraded transaction
+# immediately falls back without ever trying to wait.
+adaptive_thresholds:
+  pool_min_hybrid: 0.3
+  pool_min_wait: 0.1
+  wait_timeout_seconds: 0.05
+
+# QKD pool sizing (Task 6 Section 6 / recalibration finding, see
+# docs/implementation_notes.md). Pool capacity is sessions_buffer x
+# QKD_BITS_PER_SESSION (256 bits), i.e. capacity = 20 x 256 = 5120 bits
+# at the default below.
+qkd_pool_sessions_buffer: 20
+
+# Random seed base (Task 8 Phase 15). Actual per-repetition seeds are
+# derived from this via SeedManager (src/utils/random.py) so the whole
+# pilot is reproducible from this one value.
+base_seed: 42
+
+output_dir: results/raw/pilot

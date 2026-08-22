@@ -1,0 +1,25 @@
+# Full-study experiment configuration -- PLACEHOLDER, NOT ACTIVE.
+#
+# Per Task 7 Part 7 and Task 8 Phase 14/18: the full matrix is NOT
+# committed to yet. This file exists so the directory structure matches
+# Task 8 Phase 2's request, but it must not be used to launch a run
+# until:
+#   1. The pilot (config/pilot.yaml) has actually been executed.
+#   2. All six of Task 7 Part 7's expansion criteria have been checked
+#      against the real pilot results (see docs/implementation_notes.md).
+#   3. The values below have been filled in based on pilot findings
+#      (repetition count from observed variance, QKD pool/threshold
+#      parameters re-validated at device_count=1000, etc.) -- not
+#      copied from Task 6's original 450-cell design without
+#      re-justification.
+#
+# DO NOT RUN experiments/run_full.py against this file as-is.
+
+experiment_name: full_study
+status: NOT_READY
+# qkd_availability_levels: [1.0, 0.75, 0.5, 0.25, 0.0]
+# device_counts: [10, 100, 1000]
+# payload_classes: [small, medium, large]
+# network_loads: [nominal, congested]
+# baselines: [B1, B2, B3, B4, B5]
+# repetitions_per_cell: TBD  # from pilot variance, per Task 7 Part 8

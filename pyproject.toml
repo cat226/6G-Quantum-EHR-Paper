@@ -1,0 +1,30 @@
+[project]
+name = "qkd-pqc-ehr-simulation"
+version = "0.1.0"
+description = "Simulation framework for adaptive QKD-PQC key establishment for EHR sharing in 6G-edge healthcare networks (pilot-stage implementation)."
+requires-python = ">=3.11"
+authors = [
+    { name = "Ramana Sree K V" },
+    { name = "Verona Ann Mariya" },
+]
+
+dependencies = [
+    "simpy>=4.1",
+    "networkx>=3.6",
+    "numpy>=2.5",
+    "pandas>=3.0",
+    "pyyaml>=6.0",
+    "cryptography>=44.0",
+    "liboqs-python>=0.16",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

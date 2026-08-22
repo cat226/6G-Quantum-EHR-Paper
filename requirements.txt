@@ -1,0 +1,32 @@
+# Implementation dependencies (Task 8 Phase 1).
+#
+# Mandatory -- the simulation cannot run without these:
+simpy>=4.1              # discrete-event simulation harness (Task 6 Section 17)
+networkx>=3.6            # topology representation (multi-site extension, currently unused but scaffolded)
+numpy>=2.5                # numeric support for metrics
+pandas>=3.0                # loading/aggregating JSON-lines results
+pyyaml>=6.0                 # experiment config files
+cryptography>=44.0           # X25519, Ed25519, AES-256-GCM, HKDF (classical baseline + AEAD + KDF)
+
+# Mandatory -- the actual research contribution's cryptographic core:
+liboqs-python>=0.16          # ML-KEM-768, ML-DSA-65 bindings to liboqs.
+                              # NOTE: liboqs itself (the C library) is NOT
+                              # installed via pip -- see docs/implementation_notes.md
+                              # for the exact build steps used in this
+                              # environment (a minimal build enabling only
+                              # ML-KEM-768 and ML-DSA-65, via cmake+ninja,
+                              # requiring build-essential, cmake, ninja-build,
+                              # and libssl-dev as OS-level prerequisites).
+
+# Development / testing:
+pytest>=9.0                   # test suite (Task 8 Phase 16)
+
+# Optional (not currently imported by any module, listed for completeness
+# against the original project-level requirements.txt from workspace
+# initialization -- not required for the pilot):
+# matplotlib                  # plotting (will be needed once real pilot
+#                              # results exist to plot -- not before)
+# scipy                       # only if a statistical test beyond
+#                              # Mann-Whitney/bootstrap (Task 7 Part 8) is
+#                              # needed later
+# scikit-learn                # not currently used anywhere in this design
