@@ -604,3 +604,39 @@ claim in the manuscript, the exact resolved versions and the liboqs
 commit should be captured at pilot time — `environment.json` currently
 records the Python version, platform, and liboqs-python version, but not
 the full dependency set or the liboqs C-library commit.
+
+## F6 — Raw metrics output is append-mode, so re-runs silently accumulate
+
+Found during Task 8.5 validation. `MetricsCollector` opens its output
+file with mode `"a"` (`src/metrics/collector.py`), which is deliberate —
+the docstring explains it is append-friendly so a run need not be held in
+memory. The consequence is that **re-running the same experiment id into
+the same output directory appends to the previous run's file rather than
+replacing it.**
+
+Observed concretely: `experiments/validate_phase17.py` writes to a fixed
+`/tmp/phase17_validation` path. Running it twice made check 4 ("single
+end-to-end EHR transaction") fail with *"expected exactly 1 transaction,
+got 2"* — the second run's event was appended to the first run's file.
+Clearing the directory restored 8/8. Nothing was wrong with the
+implementation; the validation script is simply not idempotent.
+
+**This matters for Task 9, more than it did here.** `run_pilot.py` uses
+the same collector and derives its output filename from the experiment
+id, which is deterministic for a given cell. Re-running a pilot cell —
+after an interruption, a crash, or a parameter tweak — into an existing
+`results/raw/` directory would silently double-count that cell's
+transactions. Aggregates computed from it would be wrong in a way that
+does not announce itself: no error, no warning, just inflated
+`n_transactions` and a distorted distribution.
+
+Not fixed here, because the append semantics are intentional and
+changing them is a design decision rather than a defect repair. Before
+the pilot runs, pick one:
+
+- write each run into a fresh output directory (simplest, no code change);
+- have the runner refuse to start when the target `.jsonl` already exists;
+- or make the collector truncate, accepting the loss of append-resume.
+
+Whichever is chosen, the pilot's raw output should be checked for
+duplicate `transaction_id` values before any aggregation.
