@@ -60,6 +60,12 @@ class SessionResult:
     total_bytes: int
     controller_state: str | None = None  # only meaningful for B5
     failure_reason: str | None = None
+    #: Simulated seconds spent in the adaptive controller's bounded wait.
+    #: Only ever non-zero for B5 (B1-B4 never wait), so the simulation
+    #: harness can advance its clock by the same amount and charge the
+    #: wait to key-establishment latency. Defaults to 0.0 so B1-B4's
+    #: construction of SessionResult is unchanged.
+    wait_seconds: float = 0.0
 
 
 class Baseline:
@@ -253,7 +259,15 @@ class B5Adaptive(Baseline):
         criticality = context.get("criticality", ControllerCriticality.ROUTINE)
         t0 = time.perf_counter()
 
-        decision = self._controller.select_mode(pool, criticality)
+        # Inject the QKD pool's own time-advance as the wait function.
+        # `establish_session_key` is synchronous (it cannot `yield
+        # env.timeout(...)`), and the pool is the only state that evolves
+        # with simulated time, so advancing the pool IS the bounded wait.
+        # `QKDPool.tick()` is a no-op during an outage, so waiting through
+        # an outage correctly yields no replenishment. The simulation
+        # harness advances SimPy by `decision.wait_seconds` to stay in
+        # lockstep -- see src/simulation/simulator.py.
+        decision = self._controller.select_mode(pool, criticality, wait_fn=pool.tick)
 
         try:
             # Mode-sync handshake: authenticated announcement of the
@@ -292,6 +306,7 @@ class B5Adaptive(Baseline):
                 total_establishment_ms=(time.perf_counter() - t0) * 1000,
                 message_count=0, total_bytes=0,
                 controller_state=decision.state.value, failure_reason=str(e),
+                wait_seconds=decision.wait_seconds,
             )
 
         t1 = time.perf_counter()
@@ -302,6 +317,7 @@ class B5Adaptive(Baseline):
             message_count=msg_count + 2,  # + mode-sync + session auth
             total_bytes=establishment_bytes + mode_sync_bytes + auth_bytes,
             controller_state=decision.state.value,
+            wait_seconds=decision.wait_seconds,
         )
 
 

@@ -140,6 +140,12 @@ def run_cell(config: CellConfig, output_dir: str, controller_factory) -> str:
 
             wall_t1 = time.perf_counter()
 
+            # The controller's bounded wait already advanced the QKD
+            # pool's clock inside establish_session_key(). Charge that
+            # same interval to key-establishment latency and to SimPy
+            # below, so the pool, the clock, and the metrics agree.
+            wait_ms = result.wait_seconds * 1000.0
+
             mode_used = str(result.key.source) if result.key else None
             collector.record(
                 TransactionEvent(
@@ -153,9 +159,9 @@ def run_cell(config: CellConfig, output_dir: str, controller_factory) -> str:
                     seed=config.seed,
                     transaction_id=txn.transaction_id,
                     success=success,
-                    key_establishment_ms=result.total_establishment_ms,
+                    key_establishment_ms=result.total_establishment_ms + wait_ms,
                     network_latency_ms=net_latency_ms,
-                    end_to_end_ms=result.total_establishment_ms + net_latency_ms,
+                    end_to_end_ms=result.total_establishment_ms + wait_ms + net_latency_ms,
                     communication_overhead_bytes=result.total_bytes,
                     payload_bytes=txn.payload_bytes,
                     mode_used=mode_used,
@@ -168,7 +174,12 @@ def run_cell(config: CellConfig, output_dir: str, controller_factory) -> str:
             # gap via tick(), driven by the elapsed simulated seconds.
             gap = 0.05
             qkd_pool.tick(gap)
-            yield env.timeout(gap)
+            # Advance SimPy by the inter-transaction gap PLUS any bounded
+            # wait the controller performed. The pool was already ticked
+            # for the wait interval inside establish_session_key(), so it
+            # is not ticked for it again here -- pool time and env time
+            # advance by the same total.
+            yield env.timeout(gap + result.wait_seconds)
 
     for device_id in range(config.device_count):
         env.process(device_process(env, device_id))
