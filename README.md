@@ -47,8 +47,9 @@ operation is **real, not mocked or approximated**:
 
 All five baselines, the adaptive controller, the synthetic EHR workload,
 the network abstraction, raw-first metrics collection, and a test suite
-covering the critical behaviours. 50 tests were reported passing at the
-close of Task 8.
+covering the critical behaviours. **60 tests pass** and
+`experiments/validate_phase17.py` reports **8/8**, in the environment
+recorded in `docs/environment_manifest.md`.
 
 ## 3. The five baselines
 
@@ -148,10 +149,15 @@ The exact build steps used for Task 8 (a minimal build enabling only
 ML-KEM-768 and ML-DSA-65) are in `docs/implementation_notes.md` Part II §1.
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-# then build liboqs per docs/implementation_notes.md Part II §1
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.lock.txt   # exact validated versions
+# then build liboqs at the commit pinned in docs/environment_manifest.md
 ```
+
+**Python 3.12 is required** — `requirements.txt` pins `numpy>=2.5`, which
+needs Python >= 3.12, so the dependency set is unresolvable on 3.11.
+`docs/environment_manifest.md` records the full validated stack, including
+the exact liboqs commit.
 
 Run the test suite:
 
@@ -224,6 +230,7 @@ conditions where the randomness rarely fires is not a confirmed claim.*
 | Document | Contents |
 |---|---|
 | `docs/implementation_notes.md` | Implementation reference, liboqs build steps, measured PQC parameters, parameter provenance, known limitations, import-review findings |
+| `docs/environment_manifest.md` | Exact validated environment: Python, dependency and liboqs versions, build flags, validation status |
 | `docs/task_logs/` | The Tasks 1–8 research record, including the Task 8 completion report |
 | `docs/research_plan.md` | Phased research plan |
 | `research/literature_matrix.csv` | Structured literature tracking with verification status |

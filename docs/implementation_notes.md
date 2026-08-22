@@ -177,8 +177,11 @@ Clinical criticality is only a *wait-skip* input, not a primary
 decision axis, and is not swept as an independent variable in the pilot.
 
 The bounded wait takes an injected `wait_fn(seconds)` so the controller
-stays decoupled from the simulation engine. **See Part III finding F1 —
-the pilot harness does not currently inject one.**
+stays decoupled from the simulation engine. `B5Adaptive` injects the QKD
+pool's own `tick()` as that function, so the wait advances simulated time
+and the pool may replenish across the threshold. Because `tick()` is a
+no-op during an outage, waiting through an outage correctly yields no
+replenishment. See Part III finding F1 (resolved in Task 8.5).
 
 ## I.8 EHR workload
 
@@ -269,8 +272,9 @@ reading before making any future reproducibility claim.
 
 ## I.12 Testing status
 
-50 tests were reported passing at the close of Task 8 (Part II, and the
-Task 8 completion report in `docs/task_logs/`). `tests/` covers:
+**60 tests pass** in the validated environment (Task 8.5): the original
+50 from Task 8, plus 10 added in Task 8.5 covering the adaptive
+bounded-wait path. `tests/` covers:
 
 | Area | File |
 |---|---|
@@ -281,12 +285,13 @@ Task 8 completion report in `docs/task_logs/`). `tests/` covers:
 | Adaptive switching, thresholds, emergency wait-skip, primitive isolation | `test_adaptive_controller.py` |
 | **B4/B5 divergence**, PQC fallback, QKD-only failure | `test_integration_scenarios.py` |
 | EHR generation, network delay, metric calculation | `test_workload_network_metrics.py` |
+| **Adaptive bounded wait**: recovery, non-recovery, zero-timeout, B4 divergence, simulated-vs-wall-clock time, determinism | `test_b5_wait_path.py` |
 
 `experiments/validate_phase17.py` re-runs the eight Task 8 validation
-checks end-to-end.
+checks end-to-end; all 8 pass in the validated environment.
 
-**The test suite has not been re-run since import** — the container
-used for the import has none of the required dependencies. See Part III.
+Environment: see `docs/environment_manifest.md` for the exact Python,
+dependency, and liboqs versions this was validated against.
 
 ## I.13 Repository layout note
 
@@ -516,6 +521,13 @@ the pilot is run.
 
 ## F1 — The adaptive controller's bounded wait is inert in the pilot harness
 
+> **STATUS: RESOLVED in Task 8.5** (commit "Fix adaptive QKD wait-path
+> simulation"). `B5Adaptive` now injects `pool.tick` as the `wait_fn`, and
+> the harness advances SimPy by `SessionResult.wait_seconds` so the pool
+> clock, the simulation clock, and the recorded latency agree. Regression
+> tests: `tests/test_b5_wait_path.py`. The diagnosis below is retained as
+> the record of what was wrong.
+
 `AdaptiveController.select_mode()` performs its bounded wait only when
 an explicit `wait_fn` is injected. `B5Adaptive.establish_session_key()`
 (`src/baselines/baselines.py`) calls it as
@@ -574,6 +586,15 @@ whether raw events stay in Git, move to Git LFS, or are archived
 externally with only aggregates committed.
 
 ## F5 — `requirements.txt` is unpinned
+
+> **STATUS: ADDRESSED in Task 8.5.** `requirements.lock.txt` now pins the
+> full resolved dependency set, and `docs/environment_manifest.md` records
+> the liboqs commit (`8979276ad1eb008215aa78a3c56b3649f604bbb1`), library
+> version, build flags, and platform. `requirements.txt` is left unchanged
+> as the Task 8 dependency specification. The per-run `environment.json`
+> still captures only Python version, platform, and liboqs-python version —
+> widening it to embed the full resolved set at run time remains open.
+
 
 Dependencies are specified as lower bounds (`simpy>=4.1`,
 `cryptography>=44.0`, ...), not pinned versions, and there is no
