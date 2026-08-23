@@ -4,7 +4,21 @@ project:
 
 experiment:
   seed: null
+  mode: null
+  number_of_sessions: null
   output_directory: null
+
+network:
+  latency: null
+  bandwidth: null
+  packet_loss: null
+
+qkd:
+  availability: null
+  key_material: null
+
+ehr:
+  payload_size: null
 
 logging:
   level: "INFO"
