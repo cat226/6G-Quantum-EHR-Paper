@@ -51,3 +51,26 @@ This task focuses exclusively on initializing the repository and experimental ar
 - metrics
 - experiments
 - statistical analysis
+
+## 9. QKD Integration Boundary
+
+The QKD layer is intentionally separated from future network,
+application, and EHR layers.
+
+The intended architecture is:
+
+```text
+6G / Network Context
+        |
+        v
+Future Network Simulation
+        |
+        v
+QKD Protocol Abstraction
+        |
+        v
+BB84 Software Model
+        |
+        v
+Key-Generation Metrics
+```
