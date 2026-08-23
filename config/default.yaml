@@ -1,0 +1,10 @@
+project:
+  name: "6G-Quantum-EHR-Paper"
+  version: "0.1.0"
+
+experiment:
+  seed: null
+  output_directory: null
+
+logging:
+  level: "INFO"

@@ -1,1 +1,1 @@
-# Requirements for Task 0 (None)
+pytest>=7.0.0
