@@ -114,3 +114,7 @@ The validation strategy employs deterministic tests via `pytest`:
 ## 11. Relationship to Future Tasks 5+
 
 The QKD protocol abstraction serves as the foundation for experimental network evaluation. Future tasks (Tasks 5+) will interface with the `generate_key()` abstraction without requiring modifications to internal quantum models. This decoupling will allow integrating simulated EHR transmission latency models or evaluating different protocol extensions without perturbing this base QKD layer.
+
+## 12. Task 6 Interface Compatibility (Update)
+
+To support composability with the hybrid key-establishment layer (Task 6), the QKDResult structure was updated to expose the actual simulated key material via a key_material field. This is strictly an interface composability change; the underlying BB84 algorithm, statistics, and simulation semantics remain unchanged.

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 @dataclass
@@ -12,6 +12,7 @@ class QKDResult:
     final_key_length: int
     channel_error_rate: float
     random_seed: Optional[int]
+    key_material: Optional[bytes] = field(default=None, repr=False)
 
 
 class QKDProtocol(ABC):

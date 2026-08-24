@@ -22,3 +22,8 @@ ehr:
 
 logging:
   level: "INFO"
+
+hybrid:
+  combiner: 'HKDF-SHA256'
+  key_length: 32
+  context: '6G-Quantum-EHR-Paper/hybrid-key-establishment/v1'

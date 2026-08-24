@@ -60,6 +60,14 @@ class BB84Protocol(QKDProtocol):
         # Final key length (no privacy amplification in this task)
         final_key_length = len(final_key)
 
+        # Pack bits into bytes for cryptographic consumption
+        packed_key = bytearray()
+        for i in range(0, final_key_length, 8):
+            byte_val = 0
+            for j, bit in enumerate(final_key[i:i+8]):
+                byte_val |= (bit << (7 - j))
+            packed_key.append(byte_val)
+
         return QKDResult(
             protocol="BB84",
             number_of_bits=number_of_bits,
@@ -67,5 +75,6 @@ class BB84Protocol(QKDProtocol):
             qber=qber,
             final_key_length=final_key_length,
             channel_error_rate=channel_error_rate,
-            random_seed=random_seed
+            random_seed=random_seed,
+            key_material=bytes(packed_key)
         )

@@ -47,3 +47,6 @@ A contributor can verify their environment by running the test suite (`pytest`) 
 
 ## Task 5 Dependency Updates
 - cryptography>=50.0.0: Required for standard ML-KEM implementation.
+
+## Task 6 Dependency Updates
+- No new dependencies. Uses existing cryptography package for HKDF-SHA256.
