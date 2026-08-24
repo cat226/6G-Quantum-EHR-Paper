@@ -44,3 +44,6 @@ To ensure reproducibility, future tasks must adhere to:
 
 ## 7. Environment Verification
 A contributor can verify their environment by running the test suite (`pytest`) and checking the output of `src/environment.py` to ensure Python versions and platform details align with project requirements.
+
+## Task 5 Dependency Updates
+- cryptography>=50.0.0: Required for standard ML-KEM implementation.
