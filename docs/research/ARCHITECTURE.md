@@ -23,7 +23,7 @@ The repository is structured to maintain a clear separation of concerns:
 To ensure rigor and modularity, protocol and security logic remain strictly separated from network and simulation mechanics. Protocols do not assume specific network topologies, and simulations can test varying protocol configurations independently.
 
 ## 5. Experiment Separation
-Experiment drivers belong exclusively under the `experiments/` directory. They act as orchestrators that consume explicitly defined configurations from `config/` and execute modules from `src/` to produce results. 
+Experiment drivers belong exclusively under the `experiments/` directory. They act as orchestrators that consume explicitly defined configurations from `config/` and execute modules from `src/` to produce results.
 
 ## 6. Results Organization
 The results are organized to distinguish raw data from derived artifacts:
@@ -73,4 +73,27 @@ BB84 Software Model
         |
         v
 Key-Generation Metrics
+```
+
+## 10. PQC Integration Boundary
+
+The PQC layer is intentionally separated from the QKD layer, future network, application, and EHR layers.
+It represents an independent, classical baseline using standardized Post-Quantum Cryptography (ML-KEM) running over standard classical channels.
+
+The intended architecture is:
+
+```text
+6G / Network Context
+        |
+        v
+Future Network Simulation
+        |
+        v
+PQC Protocol Abstraction
+        |
+        v
+ML-KEM Software Adapter
+        |
+        v
+Key-Establishment Metrics
 ```
