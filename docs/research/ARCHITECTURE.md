@@ -97,3 +97,15 @@ ML-KEM Software Adapter
         v
 Key-Establishment Metrics
 ```
+
+## 11. Hybrid QKD-PQC Integration Boundary
+
+The hybrid layer combines the independently established QKD and PQC secrets using a deterministic HKDF-SHA256 combiner.
+
+```text
+QKD ───────────┐
+               |
+               +──> Hybrid Combiner ──> K_HYBRID
+               |
+ML-KEM ────────┘
+```

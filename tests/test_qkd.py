@@ -106,7 +106,8 @@ class DummyProtocol(QKDProtocol):
             qber=channel_error_rate,
             final_key_length=number_of_bits,
             channel_error_rate=channel_error_rate,
-            random_seed=random_seed
+            random_seed=random_seed,
+            key_material=b"\x00" * ((number_of_bits + 7) // 8)
         )
 
 def test_protocol_abstraction():
@@ -116,3 +117,16 @@ def test_protocol_abstraction():
     assert result.protocol == "Dummy"
     assert result.number_of_bits == 10
     assert result.qber == 0.5
+
+def test_key_material_exposed():
+    """Verify BB84 correctly exposes key_material as packed bytes."""
+    protocol = BB84Protocol()
+    result = protocol.generate_key(100, 0.1, random_seed=42)
+
+    assert result.key_material is not None
+    assert isinstance(result.key_material, bytes)
+    # final_key_length is in bits, key_material is packed into bytes
+    expected_bytes = (result.final_key_length + 7) // 8
+    assert len(result.key_material) == expected_bytes
+    # Ensure it's not exposed in repr
+    assert "key_material" not in repr(result)
