@@ -14,6 +14,12 @@ Record Sharing in 6G-Edge Healthcare Networks**
 
 ---
 
+> **Scope: this is a simulation study, not a hardware study.** Cryptographic
+> operations are real (ML-KEM-768 and ML-DSA-65 via `liboqs`), but they are
+> measured on the simulation host. The project makes **no claim** about PQC
+> performance on constrained IoMT devices or embedded platforms. See
+> `docs/scope_and_claims.md` before writing or citing any result.
+
 ## 1. What this project investigates
 
 Quantum Key Distribution (QKD) offers strong key-establishment
@@ -231,6 +237,7 @@ conditions where the randomness rarely fires is not a confirmed claim.*
 |---|---|
 | `docs/implementation_notes.md` | Implementation reference, liboqs build steps, measured PQC parameters, parameter provenance, known limitations, import-review findings |
 | `docs/environment_manifest.md` | Exact validated environment: Python, dependency and liboqs versions, build flags, validation status |
+| `docs/scope_and_claims.md` | **What this project does and does not claim.** Simulation-only scope boundary; rules for reporting results |
 | `docs/task_logs/` | The Tasks 1–8 research record, including the Task 8 completion report |
 | `docs/research_plan.md` | Phased research plan |
 | `research/literature_matrix.csv` | Structured literature tracking with verification status |

@@ -49,8 +49,13 @@ In scope, implemented, and tested:
 - Seeded reproducibility (Section I.11) and a test suite (Section I.12).
 
 Explicitly **out** of scope: quantum-physical simulation, a full 6G
-protocol stack, real patient data, formal security proofs, and any
-experimental result.
+protocol stack, real patient data, formal security proofs, embedded /
+constrained-device performance claims, and any experimental result.
+
+**This is a simulation study, not a hardware study.** Cryptographic timings
+are measured on the simulation host; there is no device-class model. See
+`docs/scope_and_claims.md` for the full claims boundary and the rules for
+reporting results — it governs what the manuscript may assert.
 
 ## I.3 Cryptographic primitives
 
