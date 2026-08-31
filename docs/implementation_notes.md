@@ -648,7 +648,7 @@ got 2"* — the second run's event was appended to the first run's file.
 Clearing the directory restored 8/8. Nothing was wrong with the
 implementation; the validation script is simply not idempotent.
 
-**This matters for Task 9, more than it did here.** `run_pilot.py` uses
+**This matters for the pilot run, more than it did here.** `run_pilot.py` uses
 the same collector and derives its output filename from the experiment
 id, which is deterministic for a given cell. Re-running a pilot cell —
 after an interruption, a crash, or a parameter tweak — into an existing

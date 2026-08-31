@@ -104,3 +104,50 @@ established fact, in downstream task outputs (starting with Task 6).
 - Do not assume the architecture is already implemented.
 - Do not begin literature collection or manuscript writing until
   explicitly instructed.
+
+## Roadmap status against the original 12-task framework (Task 8.5)
+
+`docs/task_logs/TASK01_project_audit.md` §7 defines the original 12-task
+framework this project follows. Recorded here because execution folded
+some of those tasks together and reordered others, which created a naming
+collision worth fixing explicitly rather than leaving implicit.
+
+| # | Original task | Status |
+|---|---|---|
+| 1 | Workspace setup | ✅ done |
+| 2 | Research question & contributions | ✅ done — Task 2 |
+| 3 | Systematic literature search & matrix | ⚠️ partial — 20 papers collected, not the full 30–50 target (standing caveat above) |
+| 4 | State-of-the-art breakdown | ✅ done — folded into Task 3/4 synthesis |
+| 5 | Evidence-backed research gap | ✅ done — Task 5 |
+| 6 | Architecture design | ✅ done — Task 6 |
+| 7 | Threat model | ✅ done — folded into Task 6 |
+| 8 | Hybrid QKD-PQC protocol definition | ✅ done — Task 7 / 7.1 |
+| 9 | Evaluation methodology & baselines | ✅ done — folded into Task 6/7 (B1–B5, metrics) |
+| 10 | Simulation/experiment implementation | ✅ implementation done and validated (what execution called "Task 8" and "Task 8.5") — **running the pilot itself is still outstanding, see below** |
+| 11 | Manuscript body content | ❌ not started — only the LaTeX skeleton exists |
+| 12 | Final audit | ❌ not done — session-level audits so far are interim checks, not that closing pass |
+
+**Naming collision, now fixed.** Execution-phase documentation (this
+session's README, `docs/implementation_notes.md`, and the PR-001 write-up)
+referred to "running the pilot" as **"Task 9."** That collides with the
+*original* Task 9 above (evaluation methodology & baselines), which is
+already done. Running the pilot was never a separately numbered task in
+the original 12 — it is the remaining work inside Task 10's boundary,
+between "the implementation is validated" and "results exist to write
+Task 11 from." Those documents have been corrected to say **"the pilot"**
+or **"the pilot run"** with no task number attached, rather than reusing
+a number that already means something else.
+
+**What is actually left, in order:**
+
+1. Run the pilot (the 30-configuration experiment defined in
+   `config/pilot.yaml`) — completes Task 10.
+2. Analyze the results and generate figures/tables.
+3. Task 11 — write the manuscript, section by section, only from what
+   the pilot actually produced.
+4. Task 12 — final audit: cross-check every claim against source data
+   before submission.
+
+The Task 3 literature gap (20 of a 30–50 target) should be closed before
+or during manuscript writing, since related-work coverage feeds directly
+into Task 11.

@@ -10,7 +10,9 @@ Record Sharing in 6G-Edge Healthcare Networks**
 > This repository contains a validated simulation implementation and the
 > research record behind it. **No experiment has been run and no results
 > exist.** `results/` is empty. Nothing here should be read as an
-> experimental finding. Running the pilot is the next stage (Task 9).
+> experimental finding. Running the pilot is the next stage --
+> see `docs/research_plan.md`'s "Roadmap status" section for how this
+> maps to the original 12-task framework.
 
 ---
 
@@ -229,7 +231,9 @@ conditions where the randomness rarely fires is not a confirmed claim.*
   `docs/implementation_notes.md` Part III and need author review before
   the pilot runs.
 
-**Next stage: Task 9 — run the pilot.**
+**Next stage: run the pilot.** (Not "Task 9" -- that number already
+belongs to the evaluation-methodology task, completed earlier. See
+`docs/research_plan.md`'s "Roadmap status" section.)
 
 ## 11. Documentation
 

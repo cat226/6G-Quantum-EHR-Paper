@@ -364,7 +364,7 @@ check 4 fail with *"expected exactly 1 transaction, got 2"*. The
 implementation was fine — the script is simply not idempotent. Clearing
 the directory restored 8/8.
 
-**For Task 9 this is a data-integrity risk, not an inconvenience.**
+**For the pilot run this is a data-integrity risk, not an inconvenience.**
 `run_pilot.py` uses the same collector and derives its filename from the
 experiment id, which is deterministic per cell. Re-running a cell after an
 interruption, a crash, or a parameter tweak would silently double-count

@@ -171,7 +171,7 @@ after this fix are not comparable to any produced before it.**
   `MetricsCollector` opens output files in append mode by design.
   Re-running a pilot cell into an existing `results/raw/` directory
   silently double-counts that cell's transactions — no error, no warning,
-  just inflated `n_transactions`. **Task 9 must use a fresh output
+  just inflated `n_transactions`. **The pilot run must use a fresh output
   directory per run**, and raw output should be checked for duplicate
   `transaction_id` values before aggregation. Tracked in `eab916e` and
   `docs/implementation_notes.md` Part III.
