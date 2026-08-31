@@ -132,9 +132,30 @@ def run_cell(config: CellConfig, output_dir: str, controller_factory) -> str:
             result = baseline.establish_session_key(context)
 
             if result.success:
-                net_latency_ms, delivered = topology.end_to_end_transmit(txn.payload_bytes)
+                # Use the derived session key to actually encrypt the EHR
+                # payload with AES-256-GCM, then decrypt it (round trip,
+                # matching the pattern _authenticate_round_trip already
+                # uses for signatures) -- every baseline shares this same
+                # AEAD instance (self.aead), so this cost is identical
+                # across B1-B5 and differs only in which key established
+                # it. What is transmitted over the network is the
+                # ciphertext (payload + 12-byte nonce + 16-byte GCM tag),
+                # not the raw plaintext size.
+                plaintext = str(txn.body).encode("utf-8")
+                enc_t0 = time.perf_counter()
+                ciphertext = baseline.aead.encrypt(
+                    result.key.key_material, plaintext, context["context_label"]
+                )
+                baseline.aead.decrypt(
+                    result.key.key_material, ciphertext, context["context_label"]
+                )
+                enc_t1 = time.perf_counter()
+                payload_encryption_ms = (enc_t1 - enc_t0) * 1000
+
+                net_latency_ms, delivered = topology.end_to_end_transmit(len(ciphertext))
                 success = delivered
             else:
+                payload_encryption_ms = 0.0
                 net_latency_ms, delivered = 0.0, False
                 success = False
 
@@ -160,8 +181,14 @@ def run_cell(config: CellConfig, output_dir: str, controller_factory) -> str:
                     transaction_id=txn.transaction_id,
                     success=success,
                     key_establishment_ms=result.total_establishment_ms + wait_ms,
+                    payload_encryption_ms=payload_encryption_ms,
                     network_latency_ms=net_latency_ms,
-                    end_to_end_ms=result.total_establishment_ms + wait_ms + net_latency_ms,
+                    end_to_end_ms=(
+                        result.total_establishment_ms
+                        + wait_ms
+                        + payload_encryption_ms
+                        + net_latency_ms
+                    ),
                     communication_overhead_bytes=result.total_bytes,
                     payload_bytes=txn.payload_bytes,
                     mode_used=mode_used,

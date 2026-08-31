@@ -39,6 +39,11 @@ class TransactionEvent:
     transaction_id: str
     success: bool
     key_establishment_ms: float
+    #: AES-256-GCM encrypt+decrypt round-trip cost for the EHR payload
+    #: itself (0.0 on a failed transaction, where no payload is ever
+    #: encrypted). Distinct from key_establishment_ms, which covers only
+    #: deriving the session key -- this is the cost of actually using it.
+    payload_encryption_ms: float
     network_latency_ms: float
     end_to_end_ms: float
     communication_overhead_bytes: int
@@ -49,15 +54,25 @@ class TransactionEvent:
 
 
 class MetricsCollector:
-    """Appends TransactionEvent records to a JSON-lines file as they
-    happen (Task 8 Phase 13/Task 6 Section 18: append-friendly, no need
-    to hold the whole run in memory, directly loadable via
-    pandas.read_json(lines=True))."""
+    """Writes TransactionEvent records to a JSON-lines file as they happen
+    (Task 8 Phase 13/Task 6 Section 18: no need to hold the whole run in
+    memory, directly loadable via pandas.read_json(lines=True)).
+
+    The output file is truncated when a collector opens it, then written
+    incrementally for the lifetime of that collector -- one open() call
+    covers one entire run's worth of record() calls, so nothing within a
+    run is lost. What truncation prevents is a SEPARATE run (e.g. a retry
+    after a crash, or a rerun with tweaked parameters) silently appending
+    its transactions onto a previous run's file: two runs sharing an
+    experiment_id and output path would otherwise double-count that
+    cell's transactions with no error and no warning (Task 8.5 finding
+    F6). A rerun now overwrites cleanly instead.
+    """
 
     def __init__(self, output_path: Path):
         self.output_path = Path(output_path)
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        self._fh = open(self.output_path, "a", encoding="utf-8")
+        self._fh = open(self.output_path, "w", encoding="utf-8")
         self._count = 0
 
     def record(self, event: TransactionEvent) -> None:

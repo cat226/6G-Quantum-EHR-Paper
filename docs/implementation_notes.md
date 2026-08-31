@@ -238,10 +238,22 @@ network load, seed), so raw logs are self-describing and never depend
 on filename parsing.
 
 Captured per transaction: success, key establishment latency,
-network latency, end-to-end latency, communication overhead (bytes),
-payload bytes, the `KeySource` actually used, the controller state, and
-the failure reason. Cryptographic per-operation timings (keygen, encap,
-decap, sign, verify) are captured in the key metadata.
+**payload encryption latency**, network latency, end-to-end latency,
+communication overhead (bytes), payload bytes, the `KeySource` actually
+used, the controller state, and the failure reason. Cryptographic
+per-operation timings (keygen, encap, decap, sign, verify) are captured
+in the key metadata.
+
+**AES-256-GCM is exercised once per successful transaction.** Every
+baseline shares one `AESGCMEncryption` instance (structural fairness,
+Section I.6), and the simulator now actually calls it: the EHR payload is
+encrypted and decrypted (round trip) with the derived session key before
+transmission, and the network layer transmits the resulting ciphertext
+size (payload + 12-byte nonce + 16-byte GCM tag), not the raw plaintext
+size. The round-trip cost is recorded as `payload_encryption_ms` and is
+included in `end_to_end_ms`. A failed transaction never reaches
+encryption and records `payload_encryption_ms=0.0`, never a fabricated
+cost.
 
 `src/metrics/aggregator.py` derives per-cell summaries from those raw
 rows: mean / median / p95, bootstrap 95% CI (no normality assumption,
@@ -611,6 +623,16 @@ records the Python version, platform, and liboqs-python version, but not
 the full dependency set or the liboqs C-library commit.
 
 ## F6 — Raw metrics output is append-mode, so re-runs silently accumulate
+
+> **STATUS: RESOLVED** (commit "Fix M5: truncate metrics output per run,
+> M3: exercise AES-256-GCM per transaction"). `MetricsCollector` now opens
+> its output file with `"w"` instead of `"a"`. Within one run every
+> `record()` call still accumulates in the same open file handle -- nothing
+> within a run is lost -- but a rerun into the same path now overwrites
+> cleanly instead of silently doubling. Verified: two full `run_cell()`
+> invocations into an identical output path produce 36/36 transactions
+> both times with zero deterministic-field mismatches, not 72. The
+> diagnosis below is retained as the record of what was wrong.
 
 Found during Task 8.5 validation. `MetricsCollector` opens its output
 file with mode `"a"` (`src/metrics/collector.py`), which is deliberate —

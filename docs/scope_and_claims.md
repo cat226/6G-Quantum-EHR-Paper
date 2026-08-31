@@ -130,7 +130,6 @@ They are simulation-level items — none requires hardware work:
 
 | Item | Status |
 |---|---|
-| Payload AEAD cost in end-to-end latency | AES-256-GCM is instantiated per baseline but never invoked per transaction, so payload encryption cost is absent from end-to-end latency |
 | Per-hop network differentiation | Access, edge, and backbone links currently share one identical parameter set |
 | Throughput and CPU/memory metrics | Not collected |
 | Communication-overhead decomposition | Recorded as a single scalar; signature share vs KEM share not separable from raw data |
