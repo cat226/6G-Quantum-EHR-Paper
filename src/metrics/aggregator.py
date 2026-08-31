@@ -32,6 +32,7 @@ class CellSummary:
     key_establishment_ms_p95: float
     key_establishment_ms_ci95_low: float
     key_establishment_ms_ci95_high: float
+    payload_encryption_ms_mean: float
     end_to_end_ms_mean: float
     end_to_end_ms_median: float
     end_to_end_ms_p95: float
@@ -90,6 +91,10 @@ def summarize_cell(events: list[dict]) -> CellSummary:
     ke_times = [e["key_establishment_ms"] for e in successes]
     e2e_times = [e["end_to_end_ms"] for e in successes]
     overhead = [e["communication_overhead_bytes"] for e in successes]
+    # Present on every event written by src/simulation/simulator.py since
+    # the M3 fix (Task 8.5); .get() with a 0.0 default keeps this function
+    # working against older raw files that predate the field.
+    enc_times = [e.get("payload_encryption_ms", 0.0) for e in successes]
 
     ke_ci_low, ke_ci_high = _bootstrap_ci(ke_times) if ke_times else (float("nan"), float("nan"))
 
@@ -117,6 +122,7 @@ def summarize_cell(events: list[dict]) -> CellSummary:
         key_establishment_ms_p95=_percentile(ke_times, 95),
         key_establishment_ms_ci95_low=ke_ci_low,
         key_establishment_ms_ci95_high=ke_ci_high,
+        payload_encryption_ms_mean=statistics.mean(enc_times) if enc_times else float("nan"),
         end_to_end_ms_mean=statistics.mean(e2e_times) if e2e_times else float("nan"),
         end_to_end_ms_median=statistics.median(e2e_times) if e2e_times else float("nan"),
         end_to_end_ms_p95=_percentile(e2e_times, 95),

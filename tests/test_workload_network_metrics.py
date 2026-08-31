@@ -128,6 +128,41 @@ def test_summarize_cell_from_raw_events():
     assert summary.fallback_frequency == 0.5  # half were PQC_ONLY
 
 
+def test_summarize_cell_reports_payload_encryption_ms_mean():
+    """M3 (Task 8.5) added payload_encryption_ms to TransactionEvent; the
+    aggregator must surface it, and must not choke on older raw files that
+    predate the field (missing key -> treated as 0.0, not a KeyError)."""
+    events = [
+        {
+            "experiment_id": "enc-test", "baseline": "B5",
+            "qkd_availability_config": 1.0, "device_count": 10,
+            "payload_class": "medium", "network_load": "nominal",
+            "success": True, "key_establishment_ms": 1.0,
+            "payload_encryption_ms": val,
+            "end_to_end_ms": 10.0,
+            "communication_overhead_bytes": 5000,
+            "mode_used": "KeySource.ADAPTIVE_HYBRID",
+        }
+        for val in (0.02, 0.04, 0.06)
+    ]
+    summary = summarize_cell(events)
+    assert abs(summary.payload_encryption_ms_mean - 0.04) < 1e-9
+
+    # A raw event predating the field must not raise.
+    legacy_events = [
+        {
+            "experiment_id": "legacy", "baseline": "B1",
+            "qkd_availability_config": 1.0, "device_count": 10,
+            "payload_class": "medium", "network_load": "nominal",
+            "success": True, "key_establishment_ms": 1.0,
+            "end_to_end_ms": 5.0, "communication_overhead_bytes": 100,
+            "mode_used": "KeySource.CLASSICAL",
+        }
+    ]
+    legacy_summary = summarize_cell(legacy_events)
+    assert legacy_summary.payload_encryption_ms_mean == 0.0
+
+
 def test_summarize_cell_handles_failures_in_denominator():
     events = [
         {"experiment_id": "t", "baseline": "B3", "qkd_availability_config": 0.0,
