@@ -21,11 +21,13 @@ liboqs-python>=0.16          # ML-KEM-768, ML-DSA-65 bindings to liboqs.
 # Development / testing:
 pytest>=9.0                   # test suite (Task 8 Phase 16)
 
+# Mandatory -- figure generation (Task 8.5, once real pilot results
+# existed to plot -- experiments/generate_figures.py):
+matplotlib>=3.11
+
 # Optional (not currently imported by any module, listed for completeness
 # against the original project-level requirements.txt from workspace
 # initialization -- not required for the pilot):
-# matplotlib                  # plotting (will be needed once real pilot
-#                              # results exist to plot -- not before)
 # scipy                       # only if a statistical test beyond
 #                              # Mann-Whitney/bootstrap (Task 7 Part 8) is
 #                              # needed later

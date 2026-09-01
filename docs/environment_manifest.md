@@ -54,6 +54,7 @@ Resolved versions, all satisfying `requirements.txt`:
 | cryptography | 50.0.0 | `>=44.0` |
 | liboqs-python | 0.16.0 | `>=0.16` |
 | pytest | 9.1.1 | `>=9.0` (dev) |
+| matplotlib | 3.11.1 | `>=3.11` (figure generation, Task 8.5) |
 
 Transitive: `cffi 2.1.1`, `pycparser 3.0`, `python-dateutil 2.9.0.post0`,
 `six 1.17.0`, `packaging 26.3`, `pluggy 1.6.0`, `iniconfig 2.3.0`,
@@ -146,15 +147,20 @@ python experiments/validate_phase17.py
 
 | Gate | Result |
 |---|---|
-| `pytest tests/` | **60 passed**, 0 failed, 0 skipped, 0 errors |
+| `pytest tests/` | **61 passed**, 0 failed, 0 skipped, 0 errors |
 | `experiments/validate_phase17.py` | **8/8 checks PASS** |
 | Cryptographic construction | Verified byte-identical to an independent HKDF reference |
 | B4/B5 divergence | Verified across all four QKD availability scenarios |
 | Determinism under fixed seed | Verified, with the bounded-wait path active |
 
-The 60 tests are the original Task 8 suite of 50, plus 10 added in
+The 61 tests are the original Task 8 suite of 50, plus 10 added in
 Task 8.5 covering the adaptive bounded-wait path
-(`tests/test_b5_wait_path.py`).
+(`tests/test_b5_wait_path.py`), plus 1 covering the aggregator's
+`payload_encryption_ms_mean` field.
 
-**The pilot has not been run.** This manifest records a validated
-environment, not an experiment.
+**The pilot has been run** (commit `56ebb2d`): 30 cells x 5 repetitions,
+757,500 transactions, `results/raw/pilot/`. Summarized to
+`results/processed/pilot_summary.csv` (`experiments/analyze_pilot.py`,
+commit `1e55d79`) and plotted to `paper/figures/`
+(`experiments/generate_figures.py`). See
+`results/processed/pilot_analysis_notes.md` for what the data shows.
