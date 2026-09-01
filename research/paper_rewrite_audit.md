@@ -150,15 +150,36 @@ commit. See Section 9 below for the one caveat.
 
 ## 7. Current References
 
-`paper/references/references.bib` — 16 entries, tiered [V]/[S]/[STD] per the
-project's own verification-tier discipline (documented in the manuscript's
-"Literature Verification Note" subsection). This session additionally
-reviewed 7 externally supplied candidate references (Section 2 of the
-master task); 2 were found directly relevant and verified in full ([V]-tier
-equivalent), 1 marginally relevant (Tier 4, contextual only), and 3
-irrelevant to this paper's subject matter. See the reference audit (Phase
-2/3, pending completion of the external reference set) for the full
-per-source breakdown.
+**[UPDATED after this document was first written.]** `paper/references/references.bib`
+now contains **126 entries**, up from the original 16. The expansion happened
+in two passes:
+
+- **Pass 1 (user-supplied PDFs):** 12 files were reviewed from direct user
+  uploads. 6 were directly relevant and cited (Kempf et al., confirmed
+  published at IFIP Networking 2024; Chou & Cao; Goertzen & Stebila; Conti
+  et al. PQ-CAN; Darzi & Yavuz; Zeng et al.), 2 were marginal/contextual and
+  cited narrowly (Kabanov et al.; Yamauchi et al.), and 4 were found
+  irrelevant to this paper's subject matter and excluded (a Bell-nonlocality
+  theory paper, a NISQ error-mitigation paper, a QML image-classification
+  paper, and one duplicate).
+- **Pass 2 (background search agent):** a 74-query search across 14 topic
+  buckets (QKD fundamentals, NIST PQC standardization detail, hybrid
+  QKD-PQC combiners, PQC for healthcare/EHR/IoMT, QKD for healthcare, 6G
+  security, adaptive/fallback mechanisms in critical infrastructure, PQC
+  overhead in real protocols, embedded/constrained-device PQC, HNDL/quantum
+  threat timelines, discrete-event simulation methodology, AEAD under
+  quantum threat, NSA/ETSI QKD positions, key management) surfaced 102
+  additional real candidates. Primary-source WebFetch verification was
+  blocked by network egress policy in that agent's environment, so all 102
+  are tiered [S] (real, specific search-result metadata) or [STD]
+  (standards documents) — never falsely upgraded to [V].
+
+Every one of the 126 entries is cited at exactly one or more specific
+points in the manuscript where it supports an identifiable claim, verified
+programmatically (126 distinct `\cite` keys used, 126 bib entries, zero
+orphaned entries, zero dangling citations). No citation-dumping: this audit
+found related sources grouped into short, differentiated clauses rather
+than stacked after a single generic sentence.
 
 `research/literature_matrix.csv` — 21 rows (20 candidate sources + header),
 consistent with the manuscript's "Broader Literature Landscape" table, which
