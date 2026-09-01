@@ -16,6 +16,8 @@
 \newcommand{\xmark}{\ding{55}}
 \usepackage{siunitx}
 \sisetup{detect-all}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,calc,decorations.pathmorphing,backgrounds}
 
 \newcommand{\keyest}{key-establishment}
 \newcommand{\qkdavail}{\ensuremath{a}}
@@ -341,6 +343,53 @@ QKD Subsystem $\leftrightarrow$ Classical Channel & Sifting/error-correction/pri
 \end{tabular}
 \end{table*}
 
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+  box/.style={rectangle, draw, rounded corners=2pt, align=center, font=\scriptsize, minimum height=0.7cm, inner sep=3pt},
+  subbox/.style={rectangle, draw, dashed, align=center, font=\tiny, minimum height=0.5cm, inner sep=2pt},
+  arr/.style={-{Stealth[length=2mm]}, thick},
+  qarr/.style={-{Stealth[length=2mm]}, thick, decorate, decoration={snake, amplitude=0.5pt, segment length=3pt, post length=1mm}},
+  boundary/.style={rectangle, draw, dash pattern=on 4pt off 2pt, rounded corners=4pt, inner sep=8pt}
+]
+
+\node[box, fill=gray!8] (iomt) at (0,1.6) {IoMT / Healthcare\\Endpoint};
+\node[box, fill=gray!8] (client) at (0,-0.2) {EHR Client /\\Application};
+\node[box] (net) at (2.6,0.7) {6G Access / Network\\Layer\\\scriptsize(untrusted transport)};
+
+\node[box, minimum width=4.4cm, minimum height=2.6cm] (gw) at (7.0,0.7) {};
+\node[font=\scriptsize\bfseries] at (7.0,1.75) {Healthcare Edge Gateway};
+\node[subbox, minimum width=2.0cm] (gwasl) at (6.0,1.15) {Adaptive\\Security Layer};
+\node[subbox, minimum width=2.0cm] (gwpqc) at (8.0,1.15) {PQC\\Subsystem};
+\node[subbox, minimum width=4.0cm] (gwkm) at (7.0,0.15) {Key-Management Component};
+
+\node[box, minimum width=2.6cm] (qkd) at (7.0,3.6) {QKD Subsystem\\/ Pool};
+
+\node[box, minimum width=4.0cm, minimum height=2.0cm] (hosp) at (12.4,0.7) {};
+\node[font=\scriptsize\bfseries] at (12.4,1.45) {Hospital / EHR Server};
+\node[subbox, minimum width=3.4cm] (hospasl) at (12.4,0.9) {Adaptive Security Layer\\(mirror)};
+\node[subbox, minimum width=3.4cm] (hospdata) at (12.4,0.15) {Synthetic EHR data store};
+
+\draw[arr] (iomt) -- node[above,font=\tiny]{telemetry (ML-DSA cert)} (net);
+\draw[arr] (client) -- node[below,font=\tiny]{EHR request/response} (net);
+\draw[arr] (net) -- node[above,font=\tiny]{encrypted payload} (gw);
+
+\draw[arr] (gw.north) -- node[right,font=\tiny,xshift=1mm,align=left]{authenticated\\classical channel} (qkd.south);
+\draw[qarr] ([xshift=-3mm]gw.north) to[bend left=15] node[left,font=\tiny]{quantum channel} ([xshift=-3mm]qkd.south);
+\draw[arr] (qkd.east) to[bend left=20] node[above,font=\tiny,align=center]{authenticated\\classical channel} (hosp.north);
+\draw[qarr] (qkd.east) to[bend right=10] node[below,font=\tiny,pos=0.3]{quantum channel} ([yshift=2mm]hosp.north);
+
+\draw[arr] (gw.east) -- node[above,font=\tiny]{mode-sync + payload} node[below,font=\tiny]{(ML-DSA auth.)} (hosp.west);
+
+\begin{scope}[on background layer]
+\node[boundary, fit=(iomt)(client), label={[font=\tiny,align=center]above:Semi-trusted endpoints}] {};
+\node[boundary, fit=(gw)(qkd)(hosp), label={[font=\tiny]above:Hospital-operated trust perimeter}] {};
+\end{scope}
+\end{tikzpicture}
+\caption{Overall system architecture. Solid arrows are authenticated classical channels; wavy arrows denote the (simulated) quantum channel. The 6G access/network layer is treated as untrusted transport; confidentiality depends on end-to-end application-layer encryption, not on any property of the network. This diagram is a direct visualization of Table~\ref{tab:components} (components) and Table~\ref{tab:connections} (connections) --- it introduces no element not already specified in those tables.}
+\label{fig:architecture}
+\end{figure*}
+
 \subsection{Component Placement Rationale}
 
 Two placement decisions in Table~\ref{tab:components} are not arbitrary and are worth justifying explicitly, since an equally plausible alternative placement exists for each and a reader auditing this architecture should be able to see why the alternative was not chosen. First, the Adaptive Security Layer is instantiated at \emph{both} the Healthcare Edge Gateway and the Hospital/EHR Server, rather than only at the gateway with the server simply trusting whatever mode the gateway reports. A gateway-only placement would be simpler --- one fewer component instance, no mode-sync handshake required --- but it would also mean the server derives or accepts a session key without independently confirming which mode produced it, which reopens exactly the kind of trust-without-verification gap Section~\ref{sec:architecture}'s trust-boundary discussion argues against at every other boundary in this architecture. Placing the decision logic at both ends and requiring an authenticated mode-sync handshake to confirm agreement (Section~\ref{sec:architecture}'s Data Flow) is the more conservative choice, paid for with one additional signature round trip that Section~\ref{sec:results} shows is a fixed, small share of B5's total overhead (3{,}309 of 8{,}890 bytes) relative to the correctness property it buys. Second, the Key-Management Component is placed at the Edge Gateway, not at the IoMT endpoint, which is consistent with --- and partly motivates --- the endpoint being PQC-only by design (Table~\ref{tab:components}) rather than a QKD-capable node in its own right. Centralizing key management at the gateway means a resource-constrained endpoint never needs to run pool-state bookkeeping, key rotation, or the adaptive decision logic itself; it only needs to hold and use a session key the gateway has already established on its behalf. This placement is a direct consequence of treating IoMT endpoints as computationally unconstrained-but-untrusted for cryptographic purposes only insofar as they can perform the PQC operations Section~\ref{sec:limitations} discusses --- it does not, by itself, resolve whether a real embedded IoMT device could feasibly run even that PQC-only path, which remains the open hardware-feasibility question this paper explicitly does not answer (Section~\ref{sec:limitations}).
@@ -350,6 +399,40 @@ Two placement decisions in Table~\ref{tab:components} are not arbitrary and are 
 Five trust boundaries structure the architecture, each with an explicit statement of what is trusted, what is not, and what protects the asset at stake. \textbf{IoMT endpoint to Edge Gateway}: the Edge Gateway is trusted (within the hospital's operated perimeter); the endpoint is treated as semi-trusted, since a compromised device retains a valid credential (Threat T4) --- the gateway authenticates the credential but does not extend blanket trust to the device's reported data merely because the credential validates, and the attack surface this boundary must tolerate includes device firmware compromise and malicious data injection under an otherwise-valid credential. \textbf{Edge Gateway to 6G network}: neither side is fully trusted --- the network itself is treated as untrusted transport by design, so confidentiality depends on end-to-end application-layer encryption (Section~\ref{sec:crypto}) rather than on any security property of the access network, which is also why the simulated 6G layer is modeled purely as a latency/throughput/loss abstraction (Section~\ref{sec:sixg}) rather than requiring its own cryptographic treatment; the residual attack surface is passive eavesdropping (motivating T1) and traffic analysis, explicitly out of scope. \textbf{6G network to hospital infrastructure}: the hospital infrastructure is trusted within its own perimeter; everything upstream, including the 6G radio access and core network, is not --- the hospital's ingress point re-validates authentication on every arriving request rather than extending implicit trust from having arrived via the hospital's own network path, protecting against ingress-point compromise and malformed or replayed traffic. \textbf{QKD subsystem to classical network}: the authenticated classical control channel is itself the trust anchor for QKD's entire security guarantee; an unauthenticated classical channel would let a man-in-the-middle defeat QKD regardless of the quantum channel's own physical security (Threat T3), which is why this channel is authenticated with ML-DSA rather than classical PKI, a design choice grounded in~\cite{atutxasanz2025authentication} rather than independently derived here. \textbf{Hospital EHR Server to clients}: the server is the root of trust for patient data; every client, including already-authenticated ones acting beyond their authorized scope, is untrusted by default --- every request is authenticated per-session with no implicit trust extended from network position, loosely following zero-trust principles, though full access-control policy modeling is explicitly out of this paper's scope.
 
 \subsection{Data Flow}
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+  actor/.style={rectangle, draw, rounded corners=2pt, font=\scriptsize, align=center, minimum width=2.4cm, minimum height=0.6cm},
+  lifeline/.style={dashed, thick, gray},
+  msg/.style={-{Stealth[length=2mm]}, font=\tiny},
+  ret/.style={-{Stealth[length=2mm]}, dashed, font=\tiny},
+  self/.style={-{Stealth[length=1.8mm]}, font=\tiny}
+]
+\def\yC{0}   \def\yG{4.2} \def\yQ{8.4} \def\yH{11.6}
+\node[actor] (client) at (\yC,0) {EHR Client};
+\node[actor] (gw) at (\yG,0) {Edge Gateway};
+\node[actor] (qkd) at (\yQ,0) {QKD Subsystem};
+\node[actor] (hosp) at (\yH,0) {Hospital Server};
+\draw[lifeline] (client.south) -- ++(0,-8.6);
+\draw[lifeline] (gw.south) -- ++(0,-8.6);
+\draw[lifeline] (qkd.south) -- ++(0,-8.6);
+\draw[lifeline] (hosp.south) -- ++(0,-8.6);
+
+\draw[msg] (\yC,-0.7) -- node[above]{1. transaction request} (\yG,-0.7);
+\draw[self] (\yG,-1.2) -- ++(0.9,0) -- node[right,pos=1]{\shortstack[l]{2. query pool state;\\evaluate Algorithm~\ref{alg:selectmode}}} ++(0,-0.6) -- ++(-0.9,0);
+\draw[msg] (\yG,-2.6) -- node[above]{3. request key material} (\yQ,-2.6);
+\draw[ret] (\yQ,-3.1) -- node[below]{4. deliver \SI{256}{bit} draw} (\yG,-3.1);
+\draw[self] (\yG,-3.6) -- ++(0.9,0) -- node[right,pos=1,align=left]{5. ML-KEM encap (concurrent);\\ derive session key (Eqs.~\eqref{eq:ikm}--\eqref{eq:expand})} ++(0,-0.7) -- ++(-0.9,0);
+\draw[msg] (\yG,-5.1) -- node[above,align=center]{6. mode-sync\\(ML-DSA signed)} (\yH,-5.1);
+\draw[ret] (\yH,-5.8) -- node[below]{7. mode-sync ack} (\yG,-5.8);
+\draw[msg] (\yG,-6.5) -- node[above,align=center]{8. AEAD-encrypted EHR payload} (\yH,-6.5);
+\draw[msg] (\yH,-7.4) -- node[above]{9. response / acknowledgment} (\yC,-7.4);
+\draw[self] (\yG,-8.1) -- ++(0.9,0) -- node[right,pos=1,font=\tiny]{10. log transaction (Section~\ref{sec:metricdefs})} ++(0,0.01);
+\end{tikzpicture}
+\caption{Adaptive key-establishment message sequence for the normal flow (QKD available), corresponding directly to Section~\ref{sec:architecture}'s Data Flow description. Steps 3--4 (QKD draw) and step 5 (ML-KEM encapsulation) occur concurrently, not sequentially, as drawn here only for message-ordering clarity. In the degraded and unavailable flows (also described in this section), step 2's decision instead routes through the bounded-wait or immediate-PQC-only branches of Algorithm~\ref{alg:selectmode}, and steps 3--4 are skipped entirely when the controller resolves to PQC-only.}
+\label{fig:sequence}
+\end{figure*}
 
 \subsubsection{Normal flow (QKD available)}
 A transaction (read, write, or share) is initiated; the Adaptive Security Layer checks whether an existing valid session key can be reused within its rotation window (Section~\ref{sec:implementation}) or whether new \keyest\ is needed. If new, the layer queries current QKD pool state, and with availability above threshold selects the hybrid mode. The QKD subsystem supplies fresh key material from the pool while the PQC subsystem concurrently performs ML-KEM encapsulation and ML-DSA-based mutual authentication of both the classical QKD control channel and the application session; the session key is derived per Section~\ref{sec:crypto}. Edge Gateway and Hospital Server perform a mode-sync handshake to confirm agreement on the active mode. The EHR payload is encrypted at the sending endpoint under AEAD, transmitted through the simulated 6G-edge network, and authenticated and decrypted at the Hospital Server. Session state (key-usage counters, QKD pool debit, rotation clock, transaction mode, and latency) is logged, feeding both the adaptive controller's future decisions and the metrics collected for this evaluation.
@@ -396,6 +479,41 @@ The controller's inputs are: the current QKD key-pool level, expressed as a frac
 \RETURN \textsc{PqcOnly} \COMMENT{pool effectively exhausted}
 \end{algorithmic}
 \end{algorithm}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  dec/.style={diamond, draw, aspect=2.2, align=center, font=\tiny, inner sep=1pt},
+  act/.style={rectangle, draw, rounded corners=2pt, align=center, font=\tiny, inner sep=3pt},
+  term/.style={rectangle, draw, rounded corners=2pt, align=center, font=\tiny, inner sep=3pt},
+  hyb/.style={term, fill=blue!12},
+  pqc/.style={term, fill=orange!15},
+  ar/.style={-{Stealth[length=1.8mm]}, thin}
+]
+\node[dec] (d1) at (0,0) {$\qkdavail \geq \tau_{\text{hybrid}}$?};
+\node[hyb] (t1) at (2.6,0) {\textsc{Hybrid}};
+\node[dec] (d2) at (0,-1.4) {$c = $\\\textsc{Emergency}?};
+\node[pqc] (t2) at (2.6,-1.4) {\textsc{PqcOnly}\\(no wait)};
+\node[dec] (d3) at (0,-2.9) {$\qkdavail \geq \tau_{\text{wait}}$?};
+\node[act] (w1) at (0,-4.2) {wait up to $T_{\text{wait}}$};
+\node[dec] (d4) at (0,-5.5) {$\qkdavail_{\text{after}} \geq \tau_{\text{hybrid}}$?};
+\node[hyb] (t3) at (2.6,-5.5) {\textsc{Hybrid}\\(delayed)};
+\node[pqc] (t4) at (-2.6,-5.5) {\textsc{PqcOnly}};
+\node[pqc] (t5) at (-2.6,-2.9) {\textsc{PqcOnly}\\(pool exhausted)};
+
+\draw[ar] (d1) -- node[above,font=\tiny]{yes} (t1);
+\draw[ar] (d1) -- node[left,font=\tiny]{no} (d2);
+\draw[ar] (d2) -- node[above,font=\tiny]{yes} (t2);
+\draw[ar] (d2) -- node[left,font=\tiny]{no} (d3);
+\draw[ar] (d3) -- node[left,font=\tiny]{yes} (w1);
+\draw[ar] (d3) -- node[above,font=\tiny]{no} (t5);
+\draw[ar] (w1) -- (d4);
+\draw[ar] (d4) -- node[above,font=\tiny]{yes} (t3);
+\draw[ar] (d4) -- node[above,font=\tiny]{no} (t4);
+\end{tikzpicture}
+\caption{Decision flowchart for Algorithm~\ref{alg:selectmode}. Blue terminals resolve to \textsc{Hybrid}; orange terminals resolve to \textsc{PqcOnly}. Emergency-flagged transactions (the middle decision) are structurally prevented from ever reaching the wait branch, which is the mechanism underlying hypothesis H2 (Section~\ref{sec:discussion}). Section~\ref{sec:workedexample} traces four concrete pool states through this exact diagram.}
+\label{fig:decisionflow}
+\end{figure}
 
 \subsection{Worked Example}
 \label{sec:workedexample}
