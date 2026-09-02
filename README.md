@@ -60,7 +60,7 @@ operation is **real, not mocked or approximated**:
 
 All five baselines, the adaptive controller, the synthetic EHR workload,
 the network abstraction, raw-first metrics collection, and a test suite
-covering the critical behaviours. **61 tests pass** (re-confirmed in this
+covering the critical behaviours. **62 tests pass** (re-confirmed in this
 audit pass) and `experiments/validate_phase17.py` reports **8/8**, in the
 environment recorded in `docs/environment_manifest.md`.
 
@@ -139,7 +139,7 @@ Do not strengthen this claim in the manuscript.
 │   ├── simulation/    simulator, events
 │   ├── metrics/       collector (raw), aggregator
 │   └── utils/         config, random (seeding), logging
-├── tests/             7 test modules, 61 tests
+├── tests/             8 test modules, 62 tests
 ├── experiments/       run_pilot.py, analyze_pilot.py, generate_figures.py, validate_phase17.py
 ├── config/            pilot.yaml, full_experiment.yaml (inert placeholder)
 ├── results/           raw/pilot/ (150 files) processed/pilot_summary.csv  figures/

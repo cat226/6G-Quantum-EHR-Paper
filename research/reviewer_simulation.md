@@ -50,6 +50,14 @@ in the implementation but is not independently exercised by the test
 suite; a test that corrupts a ciphertext or forces a decap mismatch is a
 concrete, low-cost fix worth making before submission.
 
+**RESOLVED (follow-up pass):** `tests/test_pqc.py::test_ml_kem_shared_secret_mismatch_raises`
+now monkeypatches `oqs.KeyEncapsulation.decap_secret` to return a
+corrupted secret and asserts `establish()` raises `EstablishmentFailure`.
+Verified meaningful, not a false-positive: manually neutering the guard
+(`if shared_secret_sender != shared_secret_receiver:` -> `if False:`)
+was confirmed to make this specific test fail, then the change was
+reverted. Full suite: 62/62 passing.
+
 ---
 
 ## Reviewer 2 (Systems / networking, simulation methodology)

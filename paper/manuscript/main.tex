@@ -704,7 +704,7 @@ Python & 3.12.3 \\
 liboqs (C library) & 0.16.0, commit \texttt{8979276}, minimal build (ML-KEM-768, ML-DSA-65 only) \\
 ML-KEM-768 sizes (measured) & pk 1184\,B, ct 1088\,B, shared secret 32\,B \\
 ML-DSA-65 sizes (measured) & pk 1952\,B, signature 3309\,B \\
-Test suite & 61/61 passing \\
+Test suite & 62/62 passing \\
 End-to-end validation gate & 8/8 checks passing \\
 \bottomrule
 \end{tabular}
@@ -721,7 +721,7 @@ A deliberate, explicitly acknowledged trade-off worth stating plainly: the QKD s
 
 \subsection{Test Suite}
 \label{sec:testsuite}
-Table~\ref{tab:tests} breaks down the 61-test regression suite by area. The integration-scenario tests specifically assert the B4/B5 divergence under outage that Section~\ref{sec:results} reports empirically at pilot scale; the bounded-wait tests were added specifically to catch the class of defect discussed in Section~\ref{sec:discussion} and are constructed so that at least one of them would fail against the pre-fix implementation.
+Table~\ref{tab:tests} breaks down the 62-test regression suite by area. The integration-scenario tests specifically assert the B4/B5 divergence under outage that Section~\ref{sec:results} reports empirically at pilot scale; the bounded-wait tests were added specifically to catch the class of defect discussed in Section~\ref{sec:discussion} and are constructed so that at least one of them would fail against the pre-fix implementation.
 
 \begin{table}[t]
 \centering
@@ -734,14 +734,14 @@ Area & Tests \\
 \midrule
 QKD pool depletion, outage, recovery, no-fallback & 9 \\
 HKDF extract-expand, context separation, length & 7 \\
-ML-KEM / ML-DSA round trip, tamper rejection, sizes & 7 \\
+ML-KEM / ML-DSA round trip, tamper rejection, sizes, fail-loud mismatch guard & 8 \\
 Authentication (Ed25519 and ML-DSA) & 3 \\
 Adaptive switching, thresholds, primitive isolation & 6 \\
 B4/B5 divergence, PQC fallback, QKD-only failure & 6 \\
-EHR generation, network delay, metric calculation & 12 \\
+EHR generation, network delay, metric calculation & 13 \\
 Bounded-wait path (recovery, timeout, determinism) & 10 \\
 \midrule
-\textbf{Total} & \textbf{61} \\
+\textbf{Total} & \textbf{62} \\
 \bottomrule
 \end{tabular}
 \end{table}

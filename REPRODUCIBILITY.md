@@ -80,7 +80,7 @@ Run the test suite first, to confirm the environment is correctly set up
 before spending time on the full pilot:
 
 ```bash
-pytest tests/ -v          # expect 61 passed
+pytest tests/ -v          # expect 62 passed
 python experiments/validate_phase17.py   # expect 8/8
 ```
 
