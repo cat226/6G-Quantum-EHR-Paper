@@ -216,3 +216,80 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# =====================================================================
+# Project-specific additions (6G-Quantum-EHR-Paper)
+# =====================================================================
+
+# --- Secrets / credentials ---
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.yaml
+credentials.json
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- LaTeX build artifacts (paper/manuscript/) ---
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.pdf.bak
+
+# --- liboqs / native build artifacts ---
+# liboqs (the C library) is built OUT of tree -- see
+# docs/implementation_notes.md Section 1. Nothing from that build
+# belongs in this repository.
+liboqs/
+*.a
+*.dylib
+*.dll
+cmake-build-*/
+_deps/
+CMakeFiles/
+CMakeCache.txt
+
+# --- Scratch / temporary experiment output ---
+*.tmp
+scratch/
+tmp/
+phase17_validation/
+
+# --- Large intermediate data formats ---
+# Raw results are JSON-lines and ARE tracked (see results/). These
+# binary/columnar formats are not used by the current pipeline; ignored
+# so they can't be committed accidentally at size.
+*.npy
+*.npz
+*.pkl
+*.h5
+*.hdf5
+*.parquet
+*.feather
+
+# --- Log-file exception ---
+# The stock Python template above ignores *.log globally. That is
+# correct for LaTeX and stray application logs, but experiment logs and
+# run provenance under results/ are research artifacts and MUST stay
+# tracked. Re-include them explicitly:
+!results/**/*.log
+!results/**/environment.json

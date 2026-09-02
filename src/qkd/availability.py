@@ -1,7 +1,0 @@
-from enum import Enum
-
-class QKDAvailabilityState(Enum):
-    AVAILABLE = 'AVAILABLE'
-    UNAVAILABLE = 'UNAVAILABLE'
-    INSUFFICIENT_KEY_MATERIAL = 'INSUFFICIENT_KEY_MATERIAL'
-    DEGRADED = 'DEGRADED'
