@@ -6,7 +6,7 @@
 \usepackage{algorithm}
 \usepackage{graphicx}
 \usepackage{textcomp}
-\usepackage{xcolor}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{array}
@@ -17,7 +17,7 @@
 \usepackage{siunitx}
 \sisetup{detect-all}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,calc,decorations.pathmorphing,backgrounds}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,calc,decorations.pathmorphing,backgrounds,matrix}
 
 \newcommand{\keyest}{key-establishment}
 \newcommand{\qkdavail}{\ensuremath{a}}
@@ -270,7 +270,8 @@ Table~\ref{tab:gap} summarizes where the closest related work sits relative to t
 \caption{Positioning against the closest related work. \cmark\ = explicit/evaluated, \xmark\ = absent, --- = not applicable/not established from the available source.}
 \label{tab:gap}
 \small
-\begin{tabular}{@{}p{0.30\linewidth}ccc@{}}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}p{0.34\linewidth}*{3}{>{\centering\arraybackslash}p{0.195\linewidth}}@{}}
 \toprule
 Source & Hybrid QKD-PQC & Adaptive fallback & EHR + 6G-edge \\
 \midrule
@@ -281,7 +282,8 @@ Spooren et al.~\cite{spooren2026pqcenhanced} & \checkmark & \checkmark (fail-saf
 Zhu~\cite{zhu2025technoeconomic} & \checkmark & \checkmark (evaluated) & --- (power grid) \\
 \textbf{This work} & \checkmark & \checkmark (evaluated) & \checkmark \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 %======================================================================
@@ -354,7 +356,8 @@ Key-Management Component & Orchestrates key lifecycle --- generation, pooling, r
 \caption{Connections between components. ``Adaptive decision'' identifies where the hybrid-vs-PQC-only choice is made.}
 \label{tab:connections}
 \small
-\begin{tabular}{@{}p{0.19\linewidth}p{0.16\linewidth}p{0.14\linewidth}p{0.14\linewidth}p{0.14\linewidth}p{0.17\linewidth}@{}}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}p{0.17\linewidth}p{0.15\linewidth}p{0.16\linewidth}p{0.13\linewidth}p{0.15\linewidth}p{0.19\linewidth}@{}}
 \toprule
 Connection & Data & \keyest & Encryption & Authentication & Adaptive decision \\
 \midrule
@@ -364,13 +367,73 @@ Edge Gateway $\leftrightarrow$ 6G Access & Already-encrypted payload & --- & ---
 Edge Gateway $\leftrightarrow$ Hospital Server & Encrypted payload + mode-sync & Jointly (QKD draw + ML-KEM) & At sender & Mutual (ML-DSA) & \textbf{Confirmed/mirrored here} \\
 QKD Subsystem $\leftrightarrow$ Classical Channel & Sifting/error-correction/privacy-amplification & --- & --- & ML-DSA & --- \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}
 
 \begin{figure*}[t]
 \centering
-\fbox{\rule{0pt}{5cm}\rule{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}{0pt}}
-\caption{Overall system architecture. Solid arrows are authenticated classical channels; wavy arrows denote the (simulated) quantum channel. The 6G access/network layer is treated as untrusted transport; confidentiality depends on end-to-end application-layer encryption, not on any property of the network. This diagram is a direct visualization of Table~\ref{tab:components} (components) and Table~\ref{tab:connections} (connections) --- it introduces no element not already specified in those tables.}
+\begin{tikzpicture}[
+  box/.style={rectangle, draw, rounded corners=2pt, align=center, font=\scriptsize, minimum height=0.7cm, inner sep=3pt},
+  subbox/.style={rectangle, draw, dashed, align=center, font=\tiny, minimum height=0.5cm, inner sep=2pt},
+  ctrlarr/.style={-{Stealth[length=2mm]}, thick, black},
+  qarr/.style={-{Stealth[length=2mm]}, thick, black, decorate, decoration={snake, amplitude=0.5pt, segment length=3pt, post length=1mm}},
+  dataarr/.style={-{Stealth[length=2.4mm]}, ultra thick, ForestGreen},
+  hybridarr/.style={-{Stealth[length=2mm]}, thick, dash dot, RoyalBlue},
+  pqconlyarr/.style={-{Stealth[length=2mm]}, thick, dotted, BurntOrange, dash pattern=on 1pt off 1.5pt},
+  boundary/.style={rectangle, draw, dash pattern=on 4pt off 2pt, rounded corners=4pt, inner sep=8pt}
+]
+
+\node[box, fill=gray!8] (iomt) at (0,1.6) {IoMT / Healthcare\\Endpoint\\\scriptsize(PQC-only, Table~\ref{tab:components})};
+\node[box, fill=gray!8] (client) at (0,-0.5) {EHR Client /\\Application};
+\node[box] (net) at (2.8,0.55) {6G Access / Network\\Layer\\\scriptsize(simulation abstraction;\\untrusted transport)};
+
+\node[box, minimum width=5.0cm, minimum height=3.1cm] (gw) at (7.4,0.55) {};
+\node[font=\scriptsize\bfseries] at (7.4,1.95) {Healthcare Edge Gateway};
+\node[subbox, minimum width=2.2cm] (gwasl) at (6.3,1.35) {Adaptive\\Security Layer\\\scriptsize(Alg.~\ref{alg:selectmode})};
+\node[subbox, minimum width=2.2cm] (gwpqc) at (8.5,1.35) {PQC Subsystem\\\scriptsize ML-KEM-768\\\scriptsize ML-DSA-65};
+\node[subbox, minimum width=4.6cm] (gwkm) at (7.4,0.35) {Key-Management Component\\\scriptsize HKDF combiner $\to$ session key};
+\node[subbox, minimum width=4.6cm, fill=green!6] (gwaead) at (7.4,-0.55) {AES-256-GCM\\\scriptsize EHR payload encryption/decryption};
+
+\node[box, minimum width=2.8cm] (qkd) at (7.4,4.3) {QKD Subsystem\\/ Pool\\\scriptsize(simulated rate/pool model)};
+
+\node[box, minimum width=4.2cm, minimum height=2.4cm] (hosp) at (13.4,0.55) {};
+\node[font=\scriptsize\bfseries] at (13.4,1.55) {Hospital / EHR Server};
+\node[subbox, minimum width=3.6cm] (hospasl) at (13.4,1.0) {Adaptive Security Layer\\(mirror) + Key Mgmt.};
+\node[subbox, minimum width=3.6cm, fill=green!6] (hospaead) at (13.4,0.3) {AES-256-GCM\\\scriptsize decrypt EHR payload};
+\node[subbox, minimum width=3.6cm] (hospdata) at (13.4,-0.4) {Synthetic EHR data store};
+
+\draw[ctrlarr] (iomt) -- node[above,font=\tiny]{telemetry (ML-DSA cert)} (net);
+\draw[dataarr] (client) -- node[below,font=\tiny,align=center]{EHR request/response\\(encrypted EHR data path)} (net);
+\draw[dataarr] (net) -- node[above,font=\tiny]{encrypted payload} (gw);
+
+\draw[ctrlarr] (gw.north) -- node[right,font=\tiny,xshift=1mm,align=left]{authenticated\\classical channel} (qkd.south);
+\draw[qarr] ([xshift=-4mm]gw.north) to[bend left=15] node[left,font=\tiny,align=center]{quantum channel\\(simulated)} ([xshift=-4mm]qkd.south);
+\draw[ctrlarr] (qkd.east) to[bend left=20] node[above,font=\tiny,align=center]{authenticated\\classical channel} (hosp.north);
+\draw[qarr] (qkd.east) to[bend right=10] node[below,font=\tiny,pos=0.3,align=center]{quantum channel\\(simulated)} ([yshift=2mm]hosp.north);
+
+\draw[ctrlarr] (gw.east) -- node[above,font=\tiny]{mode-sync} node[below,font=\tiny]{(ML-DSA auth.)} (hosp.west |- gw.east);
+\draw[dataarr] ([yshift=-3mm]gw.east) -- node[below,font=\tiny,align=center]{encrypted EHR\\payload} ([yshift=-3mm]hosp.west |- gw.east);
+
+\draw[hybridarr] (qkd.south) .. controls +(0,-1.2) and +(0,1.0) .. (gwkm.north);
+\draw[pqconlyarr] (gwpqc.south) -- (gwkm.north);
+
+\begin{scope}[on background layer]
+\node[boundary, fit=(iomt)(client), label={[font=\tiny,align=center]above:Semi-trusted endpoints}] {};
+\node[boundary, fit=(gw)(qkd)(hosp), label={[font=\tiny]above:Hospital-operated trust perimeter}] {};
+\end{scope}
+
+\node[boundary, fill=white, anchor=north west, inner sep=6pt] (leg) at (-0.9,-1.9) {%
+  \begin{tabular}{@{}l l@{}}
+  \tikz{\draw[ctrlarr] (0,0) -- (0.6,0);} & \small 1. Classical authenticated control channel \\[2pt]
+  \tikz{\draw[qarr] (0,0) -- (0.6,0);} & \small 2. Simulated quantum channel \\[2pt]
+  \tikz{\draw[dataarr] (0,0) -- (0.6,0);} & \small 3. Encrypted EHR data path (AES-256-GCM) \\[2pt]
+  \tikz{\draw[hybridarr] (0,0) -- (0.6,0);} & \small 4. Hybrid QKD+PQC path (both contribute via HKDF) \\[2pt]
+  \tikz{\draw[pqconlyarr] (0,0) -- (0.6,0);} & \small 5. PQC-only fallback path (QKD unavailable/degraded) \\
+  \end{tabular}
+};
+\end{tikzpicture}
+\caption{Overall system architecture. Line style distinguishes five path types (legend, bottom left): (1) solid black --- authenticated classical control channel; (2) wavy black --- the simulated quantum channel (Section~\ref{sec:qkdmodel}; not physical-layer-simulated, Section~\ref{sec:implboundary}); (3) thick green --- the encrypted EHR data path (AES-256-GCM payload confidentiality); (4) dash-dot blue --- the hybrid QKD+PQC path, active when Algorithm~\ref{alg:selectmode} selects \textsc{Hybrid}; (5) dotted orange --- the PQC-only fallback path, active when it selects \textsc{PqcOnly}. Both path 4 and path 5 terminate at the Key-Management Component's HKDF combiner (Section~\ref{sec:crypto}), which uses whichever input(s) the controller made available that transaction. The 6G access/network layer is explicitly marked as a simulation abstraction (Section~\ref{sec:sixg}: three generic hops with configurable, not standards-derived, parameters) and untrusted transport; confidentiality depends on end-to-end application-layer encryption, not on any property of the network. This diagram is a direct visualization of Table~\ref{tab:components} (components), Table~\ref{tab:connections} (connections), and Table~\ref{tab:crypto} (cryptographic primitives) --- it introduces no component or primitive not already specified in those tables, and no code path not implemented in \texttt{src/} (Section~\ref{sec:implboundary}).}
 \label{fig:architecture}
 \end{figure*}
 
@@ -398,28 +461,30 @@ Five trust boundaries structure the architecture, each with an explicit statemen
 \node[actor] (gw) at (\yG,0) {Edge Gateway};
 \node[actor] (qkd) at (\yQ,0) {QKD Subsystem};
 \node[actor] (hosp) at (\yH,0) {Hospital Server};
-\draw[lifeline] (client.south) -- ++(0,-8.6);
-\draw[lifeline] (gw.south) -- ++(0,-8.6);
-\draw[lifeline] (qkd.south) -- ++(0,-8.6);
-\draw[lifeline] (hosp.south) -- ++(0,-8.6);
+\draw[lifeline] (client.south) -- ++(0,-11.4);
+\draw[lifeline] (gw.south) -- ++(0,-11.4);
+\draw[lifeline] (qkd.south) -- ++(0,-11.4);
+\draw[lifeline] (hosp.south) -- ++(0,-11.4);
 
 \draw[msg] (\yC,-0.7) -- node[above]{1. transaction request} (\yG,-0.7);
 \draw[self] (\yG,-1.2) -- ++(0.9,0) -- node[right,pos=1]{\shortstack[l]{2. query pool state;\\evaluate Algorithm~\ref{alg:selectmode}}} ++(0,-0.6) -- ++(-0.9,0);
-\draw[msg] (\yG,-2.6) -- node[above]{3. request key material} (\yQ,-2.6);
-\draw[ret] (\yQ,-3.1) -- node[below]{4. deliver \SI{256}{bit} draw} (\yG,-3.1);
-\draw[self] (\yG,-3.6) -- ++(0.9,0) -- node[right,pos=1,align=left]{5. ML-KEM encap (concurrent);\\ derive session key (Eqs.~\eqref{eq:ikm}--\eqref{eq:expand})} ++(0,-0.7) -- ++(-0.9,0);
-\draw[msg] (\yG,-5.1) -- node[above,align=center]{6. mode-sync\\(ML-DSA signed)} (\yH,-5.1);
-\draw[ret] (\yH,-5.8) -- node[below]{7. mode-sync ack} (\yG,-5.8);
-\draw[msg] (\yG,-6.5) -- node[above,align=center]{8. AEAD-encrypted EHR payload} (\yH,-6.5);
-\draw[msg] (\yH,-7.4) -- node[above]{9. response / acknowledgment} (\yC,-7.4);
-\draw[self] (\yG,-8.1) -- ++(0.9,0) -- node[right,pos=1,font=\tiny]{10. log transaction (Section~\ref{sec:metricdefs})} ++(0,0.01);
+\draw[msg] (\yG,-2.6) -- node[above,align=center]{3. mode-sync\\(ML-DSA signed)} (\yH,-2.6);
+\draw[ret] (\yH,-3.3) -- node[below]{4. mode-sync ack} (\yG,-3.3);
+\draw[msg] (\yG,-4.4) -- node[above,align=center]{5. request key material\\\scriptsize(hybrid mode only)} (\yQ,-4.4);
+\draw[ret] (\yQ,-5.3) -- node[below]{6. deliver \SI{256}{bit} draw} (\yG,-5.3);
+\draw[self] (\yG,-5.8) -- ++(0.9,0) -- node[right,pos=1,align=left]{7. ML-KEM encap (concurrent);\\ derive session key (Eqs.~\eqref{eq:ikm}--\eqref{eq:expand})} ++(0,-0.7) -- ++(-0.9,0);
+\draw[msg] (\yG,-7.3) -- node[above,align=center]{8. session-establish auth\\(ML-DSA signed, second\\round trip)} (\yH,-7.3);
+\draw[ret] (\yH,-8.4) -- node[below]{9. session-establish ack} (\yG,-8.4);
+\draw[msg] (\yG,-9.3) -- node[above,align=center]{10. AEAD-encrypted EHR payload} (\yH,-9.3);
+\draw[msg] (\yH,-10.2) -- node[above]{11. response / acknowledgment} (\yC,-10.2);
+\draw[self] (\yG,-10.9) -- ++(0.9,0) -- node[right,pos=1,font=\tiny]{12. log transaction (Section~\ref{sec:metricdefs})} ++(0,0.01);
 \end{tikzpicture}
-\caption{Adaptive key-establishment message sequence for the normal flow (QKD available), corresponding directly to Section~\ref{sec:architecture}'s Data Flow description. Steps 3--4 (QKD draw) and step 5 (ML-KEM encapsulation) occur concurrently, not sequentially, as drawn here only for message-ordering clarity. In the degraded and unavailable flows (also described in this section), step 2's decision instead routes through the bounded-wait or immediate-PQC-only branches of Algorithm~\ref{alg:selectmode}, and steps 3--4 are skipped entirely when the controller resolves to PQC-only.}
+\caption{Adaptive (B5) key-establishment message sequence for the normal flow (QKD available), traced directly from \texttt{B5Adaptive.establish\_session\_key()} (\texttt{src/baselines/baselines.py}) rather than from an idealized protocol description. Steps 5--6 (QKD draw) and step 7 (ML-KEM encapsulation) occur concurrently, not sequentially, as drawn here only for message-ordering clarity. Two separate authenticated round trips occur, not one: mode-sync (steps 3--4), \emph{before} key material is drawn --- confirming which path the receiver should expect --- and a second, independent session-establish authentication (steps 8--9) \emph{after} the session key is derived, mutually confirming the established session itself; this is why B5's measured overhead (Section~\ref{sec:results}) is exactly two ML-DSA signature round trips (\num{6618} bytes) larger than B4's single round trip, not one. In the degraded and unavailable flows (also described in Section~\ref{sec:architecture}'s Data Flow), step 2's decision instead routes through the bounded-wait or immediate-PQC-only branches of Algorithm~\ref{alg:selectmode}, and steps 5--6 are skipped entirely when the controller resolves to PQC-only --- steps 3--4 and 8--9 still occur in that case, since both authenticated round trips are unconditional in the implementation.}
 \label{fig:sequence}
 \end{figure*}
 
 \subsubsection{Normal flow (QKD available)}
-A transaction (read, write, or share) is initiated; the Adaptive Security Layer checks whether an existing valid session key can be reused within its rotation window (Section~\ref{sec:implementation}) or whether new \keyest\ is needed. If new, the layer queries current QKD pool state, and with availability above threshold selects the hybrid mode. The QKD subsystem supplies fresh key material from the pool while the PQC subsystem concurrently performs ML-KEM encapsulation and ML-DSA-based mutual authentication of both the classical QKD control channel and the application session; the session key is derived per Section~\ref{sec:crypto}. Edge Gateway and Hospital Server perform a mode-sync handshake to confirm agreement on the active mode. The EHR payload is encrypted at the sending endpoint under AEAD, transmitted through the simulated 6G-edge network, and authenticated and decrypted at the Hospital Server. Session state (key-usage counters, QKD pool debit, rotation clock, transaction mode, and latency) is logged, feeding both the adaptive controller's future decisions and the metrics collected for this evaluation.
+A transaction (read, write, or share) is initiated; the Adaptive Security Layer checks whether an existing valid session key can be reused within its rotation window (Section~\ref{sec:implementation}) or whether new \keyest\ is needed. If new, the layer queries current QKD pool state, and with availability above threshold selects the hybrid mode (Algorithm~\ref{alg:selectmode}). Edge Gateway and Hospital Server perform an ML-DSA-authenticated mode-sync handshake \emph{first}, confirming agreement on the active mode before any key material is drawn (Figure~\ref{fig:sequence}, steps 3--4) --- this ordering, not the reverse, is what the implementation (\texttt{B5Adaptive.establish\_session\_key()}) actually executes. The QKD subsystem then supplies fresh key material from the pool while the PQC subsystem concurrently performs ML-KEM encapsulation; the session key is derived per Section~\ref{sec:crypto}. A second, independent ML-DSA-authenticated round trip --- session-establish authentication (Figure~\ref{fig:sequence}, steps 8--9) --- follows, distinct from the mode-sync exchange and mutually confirming the established session itself; this second round trip is why B5's measured overhead exceeds B4's by exactly one ML-DSA signature round trip's worth of bytes (Section~\ref{sec:results}), not by the cost of key derivation. The EHR payload is encrypted at the sending endpoint under AEAD, transmitted through the simulated 6G-edge network, and authenticated and decrypted at the Hospital Server. Session state (key-usage counters, QKD pool debit, rotation clock, transaction mode, and latency) is logged, feeding both the adaptive controller's future decisions and the metrics collected for this evaluation.
 
 \subsubsection{Degraded flow (QKD available but below full capacity)}
 Identical through pool state query. At the decision step, a graduated policy applies rather than a binary switch: for non-emergency transactions, the key-management component may wait briefly, bounded by a timeout, for pool replenishment before deciding (Section~\ref{sec:adaptive}); emergency-flagged transactions never wait. Once a mode is settled, the remainder of the flow proceeds as in the normal case, and the transaction is logged as degraded-mode for the fallback-frequency metric.
@@ -1160,6 +1225,7 @@ Table~\ref{tab:fulldata} reports the complete pooled pilot summary: all 5 baseli
 \caption{Complete pooled pilot results, all 30 configurations.}
 \label{tab:fulldata}
 \scriptsize
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}llrrrrr@{}}
 \toprule
 BL & $\acfg$ & Devices & Success/$n$ & \keyest\ (ms) & E2E (ms) & Fallback \\
@@ -1195,7 +1261,8 @@ B5 & 0.0 & 1000 & 49842/50000 & 47.8768 & 59.324 & 0.9985 \\
 B5 & 0.5 & 1000 & 49862/50000 & 45.5832 & 57.024 & 0.0470 \\
 B5 & 1.0 & 1000 & 49865/50000 & 0.4323 & 11.877 & 0.0000 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \section{Reproducibility}

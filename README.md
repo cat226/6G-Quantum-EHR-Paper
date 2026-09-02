@@ -5,14 +5,19 @@ Record Sharing in 6G-Edge Healthcare Networks**
 
 **Authors:** Ramana Sree K V, Verona Ann Mariya
 
-> ### Status: implementation validated — **pilot NOT run**
+> ### Status: implementation validated — **pilot run and reported**
 >
-> This repository contains a validated simulation implementation and the
-> research record behind it. **No experiment has been run and no results
-> exist.** `results/` is empty. Nothing here should be read as an
-> experimental finding. Running the pilot is the next stage --
-> see `docs/research_plan.md`'s "Roadmap status" section for how this
-> maps to the original 12-task framework.
+> This repository contains a validated simulation implementation, the full
+> 30-configuration pilot's raw and processed results, and the manuscript
+> reporting them. `results/raw/pilot/` holds 150 per-repetition JSON-lines
+> files (5 baselines x 3 QKD availability levels x 2 device counts x 5
+> repetitions); `results/processed/pilot_summary.csv` holds the pooled
+> per-cell summary the manuscript's Results section and figures are drawn
+> from directly. See `REPRODUCIBILITY.md` for the exact, tested commands
+> to regenerate every number and figure in the paper from a clean checkout.
+> This section previously read "pilot NOT run" before the pilot stage
+> described below was completed; it is left visible in git history rather
+> than silently rewritten.
 
 ---
 
@@ -55,9 +60,9 @@ operation is **real, not mocked or approximated**:
 
 All five baselines, the adaptive controller, the synthetic EHR workload,
 the network abstraction, raw-first metrics collection, and a test suite
-covering the critical behaviours. **60 tests pass** and
-`experiments/validate_phase17.py` reports **8/8**, in the environment
-recorded in `docs/environment_manifest.md`.
+covering the critical behaviours. **61 tests pass** (re-confirmed in this
+audit pass) and `experiments/validate_phase17.py` reports **8/8**, in the
+environment recorded in `docs/environment_manifest.md`.
 
 ## 3. The five baselines
 
@@ -134,10 +139,10 @@ Do not strengthen this claim in the manuscript.
 │   ├── simulation/    simulator, events
 │   ├── metrics/       collector (raw), aggregator
 │   └── utils/         config, random (seeding), logging
-├── tests/             7 test modules, 50 tests
-├── experiments/       run_pilot.py, validate_phase17.py
+├── tests/             7 test modules, 61 tests
+├── experiments/       run_pilot.py, analyze_pilot.py, generate_figures.py, validate_phase17.py
 ├── config/            pilot.yaml, full_experiment.yaml (inert placeholder)
-├── results/           raw/  processed/  figures/     <- EMPTY, pilot not run
+├── results/           raw/pilot/ (150 files) processed/pilot_summary.csv  figures/
 ├── docs/
 │   ├── implementation_notes.md   implementation reference + Task 8 record
 │   ├── research_plan.md
@@ -181,8 +186,11 @@ python experiments/validate_phase17.py
 
 ## 8. Running the simulation
 
-> The pilot has **not** been run. These commands are documented so the
-> next stage is reproducible — not as a record of anything executed.
+> The full 30-configuration pilot has been run; `results/raw/pilot/` and
+> `results/processed/pilot_summary.csv` are its output. The commands below
+> reproduce that same result from a clean checkout — see
+> `REPRODUCIBILITY.md` for the complete, ordered, tested command sequence
+> from environment setup through manuscript compilation.
 
 One pilot cell:
 
@@ -203,10 +211,12 @@ Raw per-transaction events are written as JSON-lines to
 `results/raw/`, alongside an `environment.json` recording config path,
 seed, Python version, platform, and timestamp. Metrics are always
 derived from those raw rows, never from pre-aggregated values.
-Aggregates belong in `results/processed/`.
+Aggregates are written to `results/processed/` by
+`experiments/analyze_pilot.py`.
 
-Figures are **not** generated yet. No figure pipeline exists — it will
-be built once real results exist to plot.
+Figures are generated from `results/processed/pilot_summary.csv` by
+`experiments/generate_figures.py`, writing PDF and PNG into
+`paper/figures/`.
 
 ## 9. Reproducibility
 
@@ -222,23 +232,28 @@ conditions where the randomness rarely fires is not a confirmed claim.*
 
 ## 10. What has NOT been done
 
-- The pilot experiment has not been run. `results/` is empty.
-- No figures, tables, or Results-section content exist.
-- Between-baseline hypothesis testing is not implemented.
-- The full-study matrix is not committed to; `config/full_experiment.yaml`
-  is an inert placeholder marked `status: NOT_READY`.
+- Formal between-baseline hypothesis testing (e.g., Mann-Whitney U) is not
+  implemented; every reported difference is descriptive, backed by a
+  bootstrap confidence interval per cell, not a formal significance test
+  (see the manuscript's Limitations section).
+- The full-study matrix (beyond this 30-configuration pilot) is not
+  committed to; `config/full_experiment.yaml` is an inert placeholder
+  marked `status: NOT_READY`. The pilot's own variance is intended to set
+  that future study's repetition count, per the pilot's original purpose.
+- The manuscript's Figure 1 (system architecture) is a TikZ diagram
+  generated directly from the component/connection/crypto tables, not an
+  externally drawn image.
 - Open items found during the Git import are recorded in
-  `docs/implementation_notes.md` Part III and need author review before
-  the pilot runs.
+  `docs/implementation_notes.md` Part III.
 
-**Next stage: run the pilot.** (Not "Task 9" -- that number already
-belongs to the evaluation-methodology task, completed earlier. See
-`docs/research_plan.md`'s "Roadmap status" section.)
+**Next stage:** the full-study matrix, if pursued, per
+`docs/research_plan.md`'s "Roadmap status" section.
 
 ## 11. Documentation
 
 | Document | Contents |
 |---|---|
+| `REPRODUCIBILITY.md` | Complete, ordered, tested command sequence: environment setup through manuscript compilation |
 | `docs/implementation_notes.md` | Implementation reference, liboqs build steps, measured PQC parameters, parameter provenance, known limitations, import-review findings |
 | `docs/environment_manifest.md` | Exact validated environment: Python, dependency and liboqs versions, build flags, validation status |
 | `docs/scope_and_claims.md` | **What this project does and does not claim.** Simulation-only scope boundary; rules for reporting results |

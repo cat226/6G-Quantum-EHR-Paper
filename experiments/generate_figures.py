@@ -263,7 +263,7 @@ def figure_3_overhead(rows: list[dict], output_dir: Path) -> None:
             ha="center", va="bottom", fontsize=8.5, color=INK_SECONDARY,
         )
     fig.text(
-        0.02, -0.04,
+        0.02, -0.14,
         "Constant across every QKD-availability level and device count (verified in\n"
         "results/processed/pilot_analysis_notes.md); depends only on which primitives a\n"
         "baseline's key establishment uses, not on QKD conditions.",
