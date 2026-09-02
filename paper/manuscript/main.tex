@@ -368,47 +368,7 @@ QKD Subsystem $\leftrightarrow$ Classical Channel & Sifting/error-correction/pri
 
 \begin{figure*}[t]
 \centering
-\begin{tikzpicture}[
-  box/.style={rectangle, draw, rounded corners=2pt, align=center, font=\scriptsize, minimum height=0.7cm, inner sep=3pt},
-  subbox/.style={rectangle, draw, dashed, align=center, font=\tiny, minimum height=0.5cm, inner sep=2pt},
-  arr/.style={-{Stealth[length=2mm]}, thick},
-  qarr/.style={-{Stealth[length=2mm]}, thick, decorate, decoration={snake, amplitude=0.5pt, segment length=3pt, post length=1mm}},
-  boundary/.style={rectangle, draw, dash pattern=on 4pt off 2pt, rounded corners=4pt, inner sep=8pt}
-]
-
-\node[box, fill=gray!8] (iomt) at (0,1.6) {IoMT / Healthcare\\Endpoint};
-\node[box, fill=gray!8] (client) at (0,-0.2) {EHR Client /\\Application};
-\node[box] (net) at (2.6,0.7) {6G Access / Network\\Layer\\\scriptsize(untrusted transport)};
-
-\node[box, minimum width=4.4cm, minimum height=2.6cm] (gw) at (7.0,0.7) {};
-\node[font=\scriptsize\bfseries] at (7.0,1.75) {Healthcare Edge Gateway};
-\node[subbox, minimum width=2.0cm] (gwasl) at (6.0,1.15) {Adaptive\\Security Layer};
-\node[subbox, minimum width=2.0cm] (gwpqc) at (8.0,1.15) {PQC\\Subsystem};
-\node[subbox, minimum width=4.0cm] (gwkm) at (7.0,0.15) {Key-Management Component};
-
-\node[box, minimum width=2.6cm] (qkd) at (7.0,3.6) {QKD Subsystem\\/ Pool};
-
-\node[box, minimum width=4.0cm, minimum height=2.0cm] (hosp) at (12.4,0.7) {};
-\node[font=\scriptsize\bfseries] at (12.4,1.45) {Hospital / EHR Server};
-\node[subbox, minimum width=3.4cm] (hospasl) at (12.4,0.9) {Adaptive Security Layer\\(mirror)};
-\node[subbox, minimum width=3.4cm] (hospdata) at (12.4,0.15) {Synthetic EHR data store};
-
-\draw[arr] (iomt) -- node[above,font=\tiny]{telemetry (ML-DSA cert)} (net);
-\draw[arr] (client) -- node[below,font=\tiny]{EHR request/response} (net);
-\draw[arr] (net) -- node[above,font=\tiny]{encrypted payload} (gw);
-
-\draw[arr] (gw.north) -- node[right,font=\tiny,xshift=1mm,align=left]{authenticated\\classical channel} (qkd.south);
-\draw[qarr] ([xshift=-3mm]gw.north) to[bend left=15] node[left,font=\tiny]{quantum channel} ([xshift=-3mm]qkd.south);
-\draw[arr] (qkd.east) to[bend left=20] node[above,font=\tiny,align=center]{authenticated\\classical channel} (hosp.north);
-\draw[qarr] (qkd.east) to[bend right=10] node[below,font=\tiny,pos=0.3]{quantum channel} ([yshift=2mm]hosp.north);
-
-\draw[arr] (gw.east) -- node[above,font=\tiny]{mode-sync + payload} node[below,font=\tiny]{(ML-DSA auth.)} (hosp.west);
-
-\begin{scope}[on background layer]
-\node[boundary, fit=(iomt)(client), label={[font=\tiny,align=center]above:Semi-trusted endpoints}] {};
-\node[boundary, fit=(gw)(qkd)(hosp), label={[font=\tiny]above:Hospital-operated trust perimeter}] {};
-\end{scope}
-\end{tikzpicture}
+\fbox{\rule{0pt}{5cm}\rule{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}{0pt}}
 \caption{Overall system architecture. Solid arrows are authenticated classical channels; wavy arrows denote the (simulated) quantum channel. The 6G access/network layer is treated as untrusted transport; confidentiality depends on end-to-end application-layer encryption, not on any property of the network. This diagram is a direct visualization of Table~\ref{tab:components} (components) and Table~\ref{tab:connections} (connections) --- it introduces no element not already specified in those tables.}
 \label{fig:architecture}
 \end{figure*}
